@@ -90,14 +90,6 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
 	
 	centerYX(Y,X,meanY, meanX,M, N);
 	
-//	double NPresent = 0;
-//	for(i=0;i<M;i++)
-//	{
-//		for(j=0;j<N;j++)
-//		{
-//			if(Y[j*M + i]!=0) NPresent = NPresent + 1; //Y[i,j]
-//		}
-//	}	
 	if(verbose>7) Rprintf("\t\t\t\t\t\t\t\tEnter Function: Ridge Regression. Shrinkage ratio rho is: %f.\n\n",rho_factor);
 	
 	int Mi = M -1;
@@ -169,7 +161,7 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
 		//xixi = F77_CALL(dnrm2)(&N,xi,&inci);
 		//xixi = pow(xixi,2);
 		xixi = F77_CALL(ddot)(&N, xi, &inci,xi, &incj);
-		xixiInv = -1/xixi;
+		xixiInv = -1/(xixi + 1e-10);
 //printMat(xi,1,N);		
 		//xi'*xi
 		
@@ -246,7 +238,7 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
 		//F77_CALL(dgeev)(&transa, &transb,&Mi, biInv, &Mi, wr, wi, vl, &ldvl,vr, &ldvr, work, &lwork, &info);
 		lda = Mi;
 		F77_CALL(dsyevd)(&jobz, &uplo,&Mi, biInv, &lda, w, work, &lwork, iwork, &liwork,&info);
-		normYiPi = w[Mi -1];
+		normYiPi = w[Mi -1]; //largestEigVal
 //printMat(w,1,Mi);		
 //Rprintf("Eigenvalue: %f.\n",normYiPi);		
 		rho = rho_factor*normYiPi; // 2Norm = sqrt(lambda_Max)
@@ -397,6 +389,7 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
 	Free(Yi);
 	Free(xi);
 	Free(yi);
+	Free(xii);
 	//
 	Free(ImB);
 	
@@ -3190,425 +3183,8 @@ if(verbose>0) Rprintf("\tlambda: %f\n", lambda);
 
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
-//version v1: elastic net penalty: converted from lassoSMLv10beta.c
-/*#include <R.h>
-#include <Rinternals.h>
-#include <math.h>
-#include <Rdefines.h>
-#include <R_ext/Rdynload.h>
-#include <stdio.h>
-#include <R_ext/Lapack.h>
-#include <R_ext/BLAS.h>
-#include <stdlib.h>
 
-*/
-//version Note: block coordinate ascent: after each block updated: update IBinv before next iteration
-//package SEM_SML: comment out same functions in two C files
-/*
-void printMat(double *a, int M, int N) //MxN
-{
-	int i,j;
-	Rprintf("Printing the matrix\n\n");
-	for(i=0;i<M;i++) 
-	{
-		for(j=0;j<N;j++)
-		{
-			Rprintf("%f\t", a[j*M +i]); //a[i,j]
-		}
-		Rprintf("\n");
-	}
-}
 
-void centerYX(double *Y,double *X, double *meanY, double *meanX,int M, int N) //M genes; N samples
-{
-	//matrix is vectorized by column: 1-M is the first column of Y
-	//missing values are from X; set corresponding Y to zero.  in main_SMLX.m
-
-	int i,index;	
-	double *Xptr;
-	double *Yptr;
-
-	int inci = 1;
-	int incj = 1;
-	int inc0 = 0;
-	int lda  = M; //leading dimension
-	double *eye;
-	eye = (double* ) Calloc(N, double);
-	double alpha = 1;
-	double beta = 0;
-	F77_CALL(dcopy)(&N,&alpha,&inc0,eye,&inci);
-	char transa = 'N';
-
-	F77_CALL(dgemv)(&transa, &M, &N,&alpha, X, &lda, eye, &inci, &beta,meanX, &incj);
-	F77_CALL(dgemv)(&transa, &M, &N,&alpha, Y, &lda, eye, &inci, &beta,meanY, &incj);
-	double scale;
-	scale = 1.0/N;
-	F77_CALL(dscal)(&M,&scale,meanY,&inci);
-	F77_CALL(dscal)(&M,&scale,meanX,&inci);
-	// OUTPUT Y X, set missing values to zero
-	scale = -1;
-	for(i=0;i<N;i++)
-	{
-		index = i*M;
-		Xptr = &X[index];
-		Yptr = &Y[index];
-		F77_CALL(daxpy)(&M,&scale,meanY,&inci,Yptr,&incj);
-		F77_CALL(daxpy)(&M,&scale,meanX,&inci,Xptr,&incj);
-	}
-	Free(eye);
-}	
-
-//--------------------- LINEAR SYSTEM SOLVER END ---------
-
-//ridge regression; return sigma2learnt
-double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, int M, int N,
-		double *B, double *f, double *mue, int verbose)
-{
-	
-	int i,j,k,lda,ldb,ldc,ldk;
-	// center Y, X
-	double *meanY, *meanX;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	
-	//copy Y, X; 
-	double *Y, *X;
-	int MN = M*N;
-	Y = (double* ) Calloc(MN, double);
-	X = (double* ) Calloc(MN, double);
-	
-	//F77_NAME(dcopy)(const int *n, const double *dx, const int *incx,
-		//double *dy, const int *incy);
-	int inci = 1;
-	int incj = 1;
-	F77_CALL(dcopy)(&MN,Ycopy,&inci,Y,&incj);
-	F77_CALL(dcopy)(&MN,Xcopy,&inci,X,&incj);
-	
-	centerYX(Y,X,meanY, meanX,M, N);
-	
-//	double NPresent = 0;
-//	for(i=0;i<M;i++)
-//	{
-//		for(j=0;j<N;j++)
-//		{
-//			if(Y[j*M + i]!=0) NPresent = NPresent + 1; //Y[i,j]
-//		}
-//	}	
-	if(verbose>7) Rprintf("\t\t\t\t\t\t\t\tEnter Function: Ridge Regression. Shrinkage ratio rho is: %f.\n\n",rho_factor);
-	
-	int Mi = M -1;
-	//for usage in loop
-	double *YiPi; //Yi'*Pi
-	YiPi =(double* ) Calloc(Mi*N, double);
-	double xixi,xixiInv; //xi'*xi;
-	int jj,index; //jj = 1:(M-1) index of YiPi
-	double normYiPi,rho;
-	double *bi,*YiPi2Norm; 	//YiPi2Norm: first term of biInv;
-	
-	double *Hi,*Yi,*xi,*yi,*xii;//xii for Hi calculation Hi= xi*xi'
-	Hi = (double* ) Calloc(N*N, double);
-	Yi =(double* ) Calloc(Mi*N, double);
-	xi = (double* ) Calloc(N, double);
-	xii = (double* ) Calloc(N, double);
-	yi = (double* ) Calloc(N, double);
-	double alpha, beta;
-	char transa = 'N';
-	char transb = 'N';
-	
-	//
-	int MiMi = Mi*Mi;
-	int NN = N*N;
-	YiPi2Norm 	= (double* ) Calloc(MiMi, double);	
-	bi 			= (double* ) Calloc(Mi, double);
-	//YiPiyi 		= (double* ) Calloc(Mi, double);
-	
-	//bi,fi
-	double *xiYi; //xi*Yi
-	xiYi = (double* ) Calloc(Mi, double);
-	double xiYibi, xiyi;
-	//main loop:
-//Rprintf("check point 1: before loop\n");
-	alpha = 1;
-	beta = 0;
-		
-//largest Eigenvalue
-	double *biInv;
-	biInv 		= (double* ) Calloc(MiMi, double); //copy of YiPi2Norm
-	//dsyevd
-	char jobz = 'N'; // yes for eigenvectors
-	char uplo = 'U'; //both ok
-	double *w, *work;
-	w = (double *) Calloc(Mi,double);
-	int lwork = 5*Mi + 10;
-	work  = (double *) Calloc(lwork,double);	
-	int liwork = 10;
-	int *iwork;
-	iwork = (int *) Calloc(liwork,int);
-	int info = 0;
-	//dsyevd function 
-
-	//linear system
-	int *ipiv;
-	//ipiv = (int *) R_alloc(N,sizeof(int));
-	ipiv = (int *) Calloc(Mi,int);
-	double *readPtr,*readPtr2;
-	//loop starts here
-	for(i=0;i<M;i++)
-	{
-		//xi = X[i,:]
-		readPtr = &X[i];
-		F77_CALL(dcopy)(&N,readPtr,&M,xi,&inci);
-		F77_CALL(dcopy)(&N,xi,&inci,xii,&incj);
-		readPtr = &Y[i];
-		F77_CALL(dcopy)(&N,readPtr,&M,yi,&inci);
-
-		//xixi = F77_CALL(dnrm2)(&N,xi,&inci);
-		//xixi = pow(xixi,2);
-		xixi = F77_CALL(ddot)(&N, xi, &inci,xi, &incj);
-		xixiInv = -1/xixi;
-//printMat(xi,1,N);		
-		//xi'*xi
-		
-		//YiPi
-		//Hi          = xi*xi'/(xi'*xi);
-        //Pi          = eye(N)-Hi;
-//Rprintf("check point 2: xixi: %f.\n",xixi);
-
-		//MatrixMult(xi,xi, Hi,alpha, beta, N, k, N);
-		transb = 'N';
-		lda = N;
-		ldb = N;
-		ldc = N;
-		F77_CALL(dgemm)(&transa, &transb,&N, &ldb, &inci,&alpha, xi,&lda, xii, &incj, &beta,Hi, &ldc);
-		
-		
-		//F77_NAME(dscal)(const int *n, const double *alpha, double *dx, const int *incx);
-		//k= N*N;
-		F77_CALL(dscal)(&NN,&xixiInv,Hi,&inci); // Hi = -xi*xi'/(xi'*xi);
-		for(j=0;j<N;j++) 
-		{	index = j*N + j;
-			Hi[index] = Hi[index] + 1;
-		}//Pi
-//printMat(Hi,N,N);	
-		
-	
-		//Yi
-		readPtr2 = &Yi[0];
-		jj = 0;
-		for(j=0;j<M;j++)
-		{	if(j!=i)
-			{
-				//copy one j row
-				readPtr = &Y[j];
-				F77_CALL(dcopy)(&N,readPtr,&M,readPtr2,&Mi);
-				jj = jj + 1;
-				readPtr2 = &Yi[jj];
-			}
-		}//jj 1:(M-1), YiPi[jj,:]
-		//YiPi=Yi*Pi
-//printMat(Yi,Mi,N);		
-		//transb = 'N';
-		lda = Mi;
-		ldb = N;
-		ldc = Mi;
-		ldk = N; //b copy
-		F77_CALL(dgemm)(&transa, &transb,&Mi, &N, &ldk,&alpha, Yi, &lda, Hi, &ldb, &beta, YiPi, &ldc);
-		//F77_CALL(dgemm)(&transa, &transb,&Mi, &N, &N,&alpha, Yi, &Mi, Hi, &N, &beta, YiPi, &Mi);
-		
-		//Rprintf("check point 3: YiPi\n");
-		
-		//YiPi*Yi' --> MixMi
-		transb = 'T';
-		ldk = Mi;
-		lda = Mi;
-		ldb = Mi;
-		ldc = Mi;
-		F77_CALL(dgemm)(&transa, &transb,&Mi, &ldk, &N,&alpha, YiPi, &lda, Yi, &ldb, &beta, YiPi2Norm, &ldc);
-		//F77_CALL(dgemm)(&transa, &transb,&Mi, &Mi, &N,&alpha, YiPi, &Mi, Yi, &Mi, &beta, YiPi2Norm, &Mi); //M-> N -> K
-		//2-norm YiPi this is the largest eigenvalue of (Yi'*Pi)*YiPi
-		//Matrix 2-norm;
-		//Repeat compution; use biInv;
-		//normYiPi = Mat2NormSq(YiPi,Mi,N); //MixN
-		//YiPi2Norm
-		
-		//Rprintf("check point 4: YiPi2Norm\n");
-		
-//normYiPi = largestEigVal(YiPi2Norm, Mi,verbose);  //YiPi2Norm make a copy inside largestEigVal, YiPi2Norm will be intermediate value of biInv;
-		//transa = 'N';
-		transb = 'N';
-		//j = Mi*Mi;
-		F77_CALL(dcopy)(&MiMi,YiPi2Norm,&inci,biInv,&incj);
-		
-		//F77_CALL(dgeev)(&transa, &transb,&Mi, biInv, &Mi, wr, wi, vl, &ldvl,vr, &ldvr, work, &lwork, &info);
-		lda = Mi;
-		F77_CALL(dsyevd)(&jobz, &uplo,&Mi, biInv, &lda, w, work, &lwork, iwork, &liwork,&info);
-		normYiPi = w[Mi -1];
-//printMat(w,1,Mi);		
-//Rprintf("Eigenvalue: %f.\n",normYiPi);		
-		rho = rho_factor*normYiPi; // 2Norm = sqrt(lambda_Max)
-		
-		if(verbose>8) Rprintf("\t\t\t\t\t\t\t\t\t Gene number: %d,\t shrinkage rho: %f\n",i,rho);
-		//biInv = (YiPi*Yi+rho*I) ; (M-1) x (M-1)
-
-		//
-		for(j=0;j<Mi;j++) 
-		{
-			index = j*Mi + j;
-			YiPi2Norm[index] = YiPi2Norm[index] + rho;
-		}
-		//biInv;
-
-		//Inverse
-		//MatrixInverse(biInv,Mi);
-		//Rprintf("check point 5: biInv inversed\n");
-		//YiPiyi = Yi'*Pi*yi  = YiPi *yi;
-		//F77_NAME(dgemv)(const char *trans, const int *m, const int *n,
-		//const double *alpha, const double *a, const int *lda,
-		//const double *x, const int *incx, const double *beta,
-		//double *y, const int *incy);
-		lda = Mi;
-		F77_CALL(dgemv)(&transa, &Mi, &N,&alpha, YiPi, &lda, yi, &inci, &beta,bi, &incj);
-		
-
-//linearSystem(YiPi2Norm,Mi,bi);//A NxN matrix
-		lda = Mi;
-		ldb = Mi;
-		F77_CALL(dgesv)(&Mi, &inci, YiPi2Norm, &lda, ipiv, bi, &ldb, &info);
-		//Rprintf("check point 6: bi updated\n");
-		//------------------------------------------------Ridge coefficient beta obtained for row i
-		// f(i)        = (xi'*yi-xi'*Yi*bi)/(xi'*xi);
-		//xiYi (M-1) x1
-		lda = Mi;
-		
-		F77_CALL(dgemv)(&transa, &Mi, &N,&alpha, Yi, &lda, xi, &inci, &beta,xiYi, &incj);
-		
-		//xiyi = xi*yi 	= X[i,j]*Y[i,j]
-		//dot product 
-		xiyi = F77_CALL(ddot)(&N, xi, &inci,yi, &incj);
-		
-		//xiYibi = xiYi*bi
-		xiYibi = F77_CALL(ddot)(&Mi, xiYi, &inci,bi, &incj);
-
-		f[i] = (xiyi-xiYibi)/xixi;
-		//Rprintf("check point 7: fi calculated\n");
-		//update B
-		jj = 0;
-		for(j = 0;j<M;j++)
-		{
-			if(j!=i)
-			{
-				//B[i,j] = bi[jj];
-				B[j*M+i] = bi[jj];
-				jj = jj +1;
-			}
-		}
-		
-		//end of 1:M		
-	}//i = 1:M
-
-	//I -B
-	double *ImB;
-	k = M*M;
-	ImB = (double* ) Calloc(k, double);
-	F77_CALL(dcopy)(&k,B,&inci,ImB,&incj);
-	//F77_NAME(dcopy)(const int *n, const double *dx, const int *incx,
-	//	double *dy, const int *incy);
-	xixiInv = -1;
-	F77_CALL(dscal)(&k,&xixiInv,ImB,&inci);
-	for(i=0;i<M;i++) 
-	{
-		index = i*M + i;
-		ImB[index] = 1 + ImB[index];
-	}
-	
-	
-	
-	
-	//noise, sigma2learnt,mue;
-	double * NOISE; 	//MxN
-	NOISE =(double* ) Calloc(MN, double);
-	transb = 'N';
-	ldk = M;
-	lda = M;
-	ldb = M;
-	ldc = M;
-	F77_CALL(dgemm)(&transa, &transb,&M, &N, &ldk,&alpha, ImB, &lda, Y, &ldb, &beta, NOISE, &ldc);//(I-B)*Y - fX
-	for(i=0;i<M;i++)
-	{
-		// row i of X
-		readPtr2 = &X[i];
-		//F77_CALL(dcopy)(&N,readPtr2,&M,xi,&inci);
-		//row i of noise
-		readPtr = &NOISE[i];
-		alpha = -f[i];
-		//F77_CALL(daxpy)(&N, &alpha,xi, &inci,readPtr, &M);
-		F77_CALL(daxpy)(&N, &alpha,readPtr2, &ldk,readPtr, &M);
-		//NOISE[i,1:N]	
-	}//row i = 1:M
-	
-	
-	//NoiseMatF77(NOISE,ImB,Y, f, X, M, N);
-		
-	double noiseNorm, sigma2learnt;
-	//noiseNorm = FrobeniusNorm(NOISE, M, N); //NOISE  = sparse(speye(M)-B)*Y-bsxfun(@times,f,X);
-	//noiseNorm = F77_CALL(dnrm2)(&MN,NOISE,&inci);
-	//sigma2learnt = noiseNorm*noiseNorm/(MN -1); //sigma2learnt    = sum(sum(NOISE.^2))/(sum(NPresent)-1);
-	noiseNorm = F77_CALL(ddot)(&MN, NOISE, &inci,NOISE, &incj);
-	sigma2learnt = noiseNorm/(MN -1);
-	
-	//mue          = (IM-B)*meanY-bsxfun(@times,f,meanX);
-	//dgemv mue = Ax + beta*mue
-	
-
-	
-	
-	
-	//mue[i] = -f[i]*meanX[i];
-	for(i=0;i<M;i++)
-	{
-		mue[i] = -f[i]*meanX[i];
-	}
-	beta = 1;
-	ldk = M;
-	lda = M;
-	alpha = 1;
-	F77_CALL(dgemv)(&transa, &M, &ldk,&alpha, ImB, &lda, meanY, &inci, &beta,mue, &incj);
-	
-	
-	if(verbose>7) Rprintf("\t\t\t\t\t\t\t\tExit function: Ridge Regression. sigma^2 is: %f.\n\n",sigma2learnt);
-	
-	Free(meanY);
-	Free(meanX);
-	Free(Y);
-	Free(X);
-	Free(YiPi);
-	//Free(biInv);
-	Free(YiPi2Norm);
-	Free(bi);	
-	//Free(YiPiyi);
-	Free(xiYi);
-	Free(NOISE);
-	//
-	Free(Hi);
-	Free(Yi);
-	Free(xi);
-	Free(yi);
-	//
-	Free(ImB);
-	
-	//
-	Free(biInv);
-
-	Free(w);
-	Free(iwork);
-	Free(work);
-	
-	Free(ipiv);
-	return sigma2learnt;
-
-}
-
-*/
 //by Weighted_LassoSf xi
 //lambda_max          = max(max(abs(N*sigma2*IM - (Y*(Y'-X'*DxxRxy)))./W  ));
 double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alpha_factor) 	//------adaEN Apr. 2013	
@@ -3736,366 +3312,7 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 	return lambda_max;	
 }
 
-/*
-//Q[i,k] =	N*sigma2*IM - (Y*(Y'-X'*DxxRxy)))
-void QlambdaStart(double *Y,double *X, double *Q, double sigma2,int M, int N)
-{	
-	// Oct 08, 2012: assume one eQTL for each gene; This fucntion needs significant revision if this assumption doesnot hold
-	double *dxx, *rxy, *DxxRxy,*readPtr1,*readPtr2;
-	
-	dxx				= (double* ) Calloc(M, double);
-	rxy				= (double* ) Calloc(M, double);
-	DxxRxy			= (double* ) Calloc(M, double);
-	int i,index,ldk,lda,ldb,ldc;
-	int inci = 1;
-	int incj = 1; 
-	//double norm;
-	lda = M;
-	for(i=0;i<M;i++)
-	{
-		readPtr1 	= &X[i]; //ith row
-		readPtr2 	= &Y[i];
 
-		//norm  		= F77_CALL(dnrm2)(&N,readPtr1,&M);	
-		//dxx[i] 		= pow(norm,2);
-		dxx[i] = F77_CALL(ddot)(&N,readPtr1,&lda,readPtr1,&M);
-		//res = ddot(n, x, incx, y, incy)
-		rxy[i] 		= F77_CALL(ddot)(&N,readPtr1,&lda,readPtr2,&M);
-		DxxRxy[i] 	= rxy[i]/dxx[i];		
-	}
-	//abs(N*sigma2*IM - (Y*(Y'-X'*DxxRxy)))./W ; W[i,i] = inf.
-	double Nsigma2  = N*sigma2; 			// int * double --> double
-
-	//cache X[k,:]*DxxRxy[k]
-	double * XDxxRxy;
-	int MN = M*N;
-	XDxxRxy = (double* ) Calloc(MN, double);
-	F77_CALL(dcopy)(&MN,X,&inci,XDxxRxy,&incj);
-	double alpha;	
-	for(i=0;i<M;i++)
-	{
-		alpha  = -DxxRxy[i];
-		readPtr1 = &XDxxRxy[i]; //ith row
-		F77_CALL(dscal)(&N,&alpha, readPtr1,&M);//	(n, a, x, incx)
-	}
-	
-	// Y- XDxxRxy  			daxpy(n, a, x, incx, y, incy) y= ax + y
-	alpha  = 1.0;
-	// XDxxRxy <- alpha*Y + XDxxRxy
-	F77_CALL(daxpy)(&MN,&alpha,Y,&inci,XDxxRxy,&incj);
-	//double *YYXDR; //= Y*XDxxRxy' 		--> Q
-
-	double beta;
-	char transa = 'N';
-	char transb = 'T';
-	alpha = -1;
-	beta = 0;
-	//F77_CALL(dgemm)(&transa, &transb,&M, &M, &N,&alpha, Y,&M, XDxxRxy, &M, &beta,Q, &M); //M xK, K xN  --> MxN, N xM --> M <-M, N<-M, k<-N
-	//transpose 	(Y-X*DxxRxy)*Y'
-
-	ldb = M;
-	ldc = M;
-	ldk = M;
-	F77_CALL(dgemm)(&transa, &transb,&M, &lda, &N,&alpha, XDxxRxy,&ldb, Y, &ldc, &beta,Q, &ldk); //M xK, K xN  --> MxN, N xM --> M <-M, N<-M, k<-N	
-	
-	//diagonal -->0; other element /wij
-	for(i=0;i<M;i++)
-	{
-		index = i*M + i;
-		Q[index]= Q[index] + Nsigma2;
-	}	
-	
-	Free(dxx);
-	Free(rxy);
-	Free(DxxRxy);
-	//Free(XX);
-	Free(XDxxRxy);
-
-	
-}
-
-// 8888888888888888888888888888888888888888888888888888888888888888888888
-//Q = N*sigma2*inv(I-B)-(Y-B*Y-fL*X)-mueL*ones(1,N))*Y';
-void QlambdaMiddle(double *Y,double *X, double *Q,double *B,double *f, double *mue, double sigma2,int M, int N)
-{	
-	// Oct 08, 2012: assume one eQTL for each gene; This fucntion needs significant revision if this assumption doesnot hold
-	//I - B; copy of IB for inverse
-	double *IB, *IBinv,*IBcopy;
-	int MM = M*M;
-	int MN = M*N;
-	IB = (double* ) Calloc(MM, double);
-	IBinv = (double* ) Calloc(MM, double);
-	IBcopy = (double* ) Calloc(MM, double);
-	int inci = 1;
-	int incj = 1;
-	F77_CALL(dcopy)(&MM,B,&inci,IB,&incj);	
-	int i,index;
-	double alpha;
-	double beta = 0;
-	alpha = -1;
-	F77_CALL(dscal)(&MM,&alpha,IB,&inci);
-	alpha = 0;
-	int inc0 = 0;
-	//F77_CALL(dscal)(&MM,&alpha,IBinv,&inci);//initialized
-	F77_CALL(dcopy)(&MM,&alpha,&inc0,IBinv,&inci);
-	
-	for(i=0;i<M;i++) 
-	{
-		index = i*M + i;
-		IB[index] = 1 + IB[index];
-		IBinv[index] = 1;
-	}
-	F77_CALL(dcopy)(&MM,IB,&inci,IBcopy,&incj);	
-
-	
-	//MatrixInverse(IBinv,M);
-	//By linear solver: not inverse (IB*x = IM) result stored in IM; 
-	//multiLinearSystem(IB, M,IBinv,M);
-	int info = 0;
-	int *ipiv;
-	ipiv = (int *) Calloc(M,int);
-	int lda = M;
-	int ldb = M;
-	int ldc = M;
-	int ldk = M;
-	F77_CALL(dgesv)(&M, &ldk, IBcopy, &lda, ipiv, IBinv, &ldb, &info);
-
-	
-	
-	//abs(N*sigma2*inv(I-B) - NOISE*Y'.
-	double Nsigma2  = N*sigma2; 			// int * double --> double
-	double *Noise;
-	Noise = (double* ) Calloc(MN, double);	
-	//(I-B)*Y-bsxfun(@times,f,X);
-	char transa = 'N';
-	char transb = 'N';
-	alpha = 1;
-	F77_CALL(dgemm)(&transa, &transb,&M, &N, &ldk,&alpha, IB, &lda, Y, &ldb, &beta, Noise, &ldc);
-	double *readPtr1, *readPtr2;
-	for(i=0;i<M;i++)
-	{
-		readPtr1 = &X[i];
-		readPtr2 = &Noise[i];
-		alpha = -f[i]; // y= alpha x + y
-		F77_CALL(daxpy)(&N, &alpha,readPtr1, &lda,readPtr2, &M);
-	}//row i = 1:M
-
-	//NoiseMat(Noise,B,Y, f, X, M, N);
-	//Noise - Mue
-	//Errs(irho,cv)   = norm((1-Missing_test).*(A*Ytest-bsxfun(@times,fR,Xtest)-mueR*ones(1,Ntest)),'fro')^2;
-	//Noise - mue: Mx N
-	alpha = -1;
-	for(i=0;i<N;i++)
-	{
-		readPtr1 = &Noise[i*M];
-		F77_CALL(daxpy)(&M, &alpha,mue, &inci,readPtr1, &incj);
-	}	
-	//Nsigma2*IBinv -  Noise *Y'
-	//-Noise*Y' -->Q  	C := alpha*op(A)*op(B) + beta*C,
-	//alpha = -1;
-	transb = 'T';
-	F77_CALL(dgemm)(&transa, &transb,&M, &ldk, &N,&alpha, Noise, &lda, Y, &ldb, &beta, Q, &ldc);
-	//eiB = ei-BiT			//daxpy(n, a, x, incx, y, incy) 		y := a*x + y
-	alpha = Nsigma2;
-	F77_CALL(daxpy)(&MM, &alpha,IBinv, &inci,Q, &incj);
-	
-	Free(IB);
-	Free(IBinv);
-	Free(IBcopy);
-	Free(Noise);
-	Free(ipiv);
-	
-}
-
-
-void QlambdaMiddleCenter(double *Y,double *X, double *Q,double *B,double *f, double sigma2,int M, int N,
-					double *IBinv)
-{	
-	// Oct 08, 2012: assume one eQTL for each gene; This fucntion needs significant revision if this assumption doesnot hold
-	//I - B; copy of IB for inverse
-	double *IB; 	//, *IBinv,*IBcopy
-	int MM = M*M;
-	int MN = M*N;
-	IB = (double* ) Calloc(MM, double);
-	//IBinv = (double* ) Calloc(MM, double);
-	//IBcopy = (double* ) Calloc(MM, double);
-	int inci = 1;
-	int incj = 1;
-	//int inc0 = 0;
-	F77_CALL(dcopy)(&MM,B,&inci,IB,&incj);	
-	int i,index;
-	double alpha;
-	double beta = 0;
-	alpha = -1;
-	F77_CALL(dscal)(&MM,&alpha,IB,&inci);
-	//alpha = 0;
-	//F77_CALL(dscal)(&MM,&alpha,IBinv,&inci);//initialized
-	//F77_CALL(dcopy)(&MM,&alpha,&inc0,IBinv,&inci);
-	for(i=0;i<M;i++) 
-	{
-		index = i*M + i;
-		IB[index] = 1 + IB[index];
-		//IBinv[index] = 1;
-	}
-	//F77_CALL(dcopy)(&MM,IB,&inci,IBcopy,&incj);	
-
-	
-	//MatrixInverse(IBinv,M);
-	//By linear solver: not inverse (IB*x = IM) result stored in IM; 
-	//multiLinearSystem(IB, M,IBinv,M);
-	//int info = 0;
-	//int *ipiv;
-	//ipiv = (int *) Calloc(M,int);
-	int lda = M;
-	int ldb = M;
-	int ldc = M;
-	int ldk = M;
-	//F77_CALL(dgesv)(&M, &ldk, IBcopy, &lda, ipiv, IBinv, &ldb, &info);
-
-	
-	
-	//abs(N*sigma2*inv(I-B) - NOISE*Y'.
-	double Nsigma2  = N*sigma2; 			// int * double --> double
-	double *Noise;
-	Noise = (double* ) Calloc(MN, double);	
-	//(I-B)*Y-bsxfun(@times,f,X);
-	char transa = 'N';
-	char transb = 'N';
-	alpha = 1;
-	F77_CALL(dgemm)(&transa, &transb,&M, &N, &ldk,&alpha, IB, &lda, Y, &ldb, &beta, Noise, &ldc);
-	double *readPtr1, *readPtr2;
-	for(i=0;i<M;i++)
-	{
-		readPtr1 = &X[i];
-		readPtr2 = &Noise[i];
-		alpha = -f[i]; // y= alpha x + y
-		F77_CALL(daxpy)(&N, &alpha,readPtr1, &lda,readPtr2, &M);
-	}//row i = 1:M
-
-	//NoiseMat(Noise,B,Y, f, X, M, N);
-	//Noise - Mue
-	//Errs(irho,cv)   = norm((1-Missing_test).*(A*Ytest-bsxfun(@times,fR,Xtest)-mueR*ones(1,Ntest)),'fro')^2;
-	//Noise - mue: Mx N
-
-	//Nsigma2*IBinv -  Noise *Y'
-	//-Noise*Y' -->Q  	C := alpha*op(A)*op(B) + beta*C,
-	alpha = -1;
-	transb = 'T';
-	F77_CALL(dgemm)(&transa, &transb,&M, &ldk, &N,&alpha, Noise, &lda, Y, &ldb, &beta, Q, &ldc);
-	//eiB = ei-BiT			//daxpy(n, a, x, incx, y, incy) 		y := a*x + y
-	alpha = Nsigma2;
-	F77_CALL(daxpy)(&MM, &alpha,IBinv, &inci,Q, &incj);
-	
-	Free(IB);
-	//Free(IBinv);
-	//Free(IBcopy);
-	Free(Noise);
-	//Free(ipiv);
-	
-}
-
-
-// 8888888888888888888888888888888888888888888888888888888888888888888888
-//BLOCK COORDINATE ASCENSION: QIBinv = inv(I-B): by multi linear system
-void UpdateIBinvPermute(double *QIBinv, double *B, int M)
-{
-	//I - B; copy of IB for inverse
-	double *IB,*IBinv;	//, *IBinv,*IBcopy;
-	int MM = M*M;
-	int lda = M;
-	int ldb = M;
-	int ldk = M;
-	IB = (double* ) Calloc(MM, double);
-	IBinv = (double* ) Calloc(MM, double);
-	int inci = 1;
-	int incj = 1;
-	int inc0 = 0;
-	F77_CALL(dcopy)(&MM,B,&inci,IB,&incj);	
-	int i,index;
-	double alpha;
-	//double beta = 0;
-	alpha = -1;
-	F77_CALL(dscal)(&MM,&alpha,IB,&inci);
-	alpha = 0;
-	//F77_CALL(dscal)(&MM,&alpha,IBinv,&inci);//initialized
-	F77_CALL(dcopy)(&MM,&alpha,&inc0,IBinv,&inci);
-	for(i=0;i<M;i++) 
-	{
-		index = i*M + i;
-		IB[index] = 1 + IB[index];
-		IBinv[index] = 1;
-	}
-	
-	//MatrixInverse(IBinv,M);
-	//By linear solver: not inverse (IB*x = IM) result stored in IM; 
-	//multiLinearSystem(IB, M,IBinv,M);
-	int info = 0;
-	int *ipiv;
-	ipiv = (int *) Calloc(M,int);
-	F77_CALL(dgesv)(&M, &ldk, IB, &lda, ipiv, IBinv, &ldb, &info);
-	double *ptr1,*ptr2;
-	//for(i=0;i<M;i++) Rprintf("IPIV: \n: %d \t",ipiv[i]);
-	//Rprintf("\n");
-	
-	
-	for(i=0;i<M;i++)
-	{
-		index = ipiv[i] -1;
-		ptr1 = &QIBinv[index*M];
-		ptr2 = &IBinv[i*M];
-		F77_CALL(dcopy)(&M,ptr2,&inci,ptr1,&incj);
-		
-	}
-	
-	Free(IB);
-	Free(ipiv);
-	Free(IBinv);
-}
-
-
-// 8888888888888888888888888888888888888888888888888888888888888888888888
-//BLOCK COORDINATE ASCENSION: QIBinv = inv(I-B): by multi linear system
-void UpdateIBinv(double *QIBinv, double *B, int M)
-{
-	//I - B; copy of IB for inverse
-	double *IB;	//, *IBinv,*IBcopy;
-	int MM = M*M;
-	int lda = M;
-	int ldb = M;
-	int ldk = M;
-	IB = (double* ) Calloc(MM, double);
-
-	int inci = 1;
-	int incj = 1;
-	int inc0 = 0;
-	F77_CALL(dcopy)(&MM,B,&inci,IB,&incj);	
-	int i,index;
-	double alpha;
-	//double beta = 0;
-	alpha = -1;
-	F77_CALL(dscal)(&MM,&alpha,IB,&inci);
-	alpha = 0;
-	//F77_CALL(dscal)(&MM,&alpha,IBinv,&inci);//initialized
-	F77_CALL(dcopy)(&MM,&alpha,&inc0,QIBinv,&inci);
-	for(i=0;i<M;i++) 
-	{
-		index = i*M + i;
-		IB[index] = 1 + IB[index];
-		QIBinv[index] = 1;
-	}
-	
-	//MatrixInverse(IBinv,M);
-	//By linear solver: not inverse (IB*x = IM) result stored in IM; 
-	//multiLinearSystem(IB, M,IBinv,M);
-	int info = 0;
-	int *ipiv;
-	ipiv = (int *) Calloc(M,int);
-	F77_CALL(dgesv)(&M, &ldk, IB, &lda, ipiv, QIBinv, &ldb, &info);
-
-	Free(IB);
-	Free(ipiv);
-}
-*/
 //no Missing
 //--------------------------------------------------------------------------------  WEIGHTED_LASSOSF
 double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy,double *Xcopy, 				//------adaEN Apr. 2013	
@@ -6179,16 +5396,23 @@ if(i_alpha ==0)
 //	F77_CALL(dcopy)(&Nlambdas,Sigmas2,&inci,readPtr1,&incj);
 // version 2 of R_package:ｆollow EN_MPI_epsilon
 //version 3.1
-	double minDist = fabs(ErrorMean[index -1] - minimumErr);
+
 	double distance;
 	int tempIlambda_ms = index;
-	for(i=index-1;i>0;i--) 
+	if(index ==0)
 	{
-		distance = fabs(ErrorMean[i] - minimumErr);
-		if(distance <minDist)
+		tempIlambda_ms=1;
+	}else
+	{
+		double minDist = fabs(ErrorMean[index -1] - minimumErr);
+		for(i=index-1;i>0;i--) 
 		{
-			minDist = distance;
-			tempIlambda_ms = i + 1;
+			distance = fabs(ErrorMean[i] - minimumErr);
+			if(distance <minDist)
+			{
+				minDist = distance;
+				tempIlambda_ms = i + 1;
+			}
 		}
 	}
 	ilambda_ms = tempIlambda_ms;
@@ -7162,16 +6386,22 @@ if(i_alpha ==0)
 	F77_CALL(dcopy)(&Nlambdas,Sigmas2,&inci,readPtr1,&incj);
 // version 2 of R_package:ｆollow EN_MPI_epsilon
 //version 3.1
-	double minDist = fabs(ErrorMean[index -1] - minimumErr);
 	double distance;
 	int tempIlambda_ms = index;
-	for(i=index-1;i>0;i--) 
-	{
-		distance = fabs(ErrorMean[i] - minimumErr);
-		if(distance <minDist)
+	if(index ==0)
+	{	
+		tempIlambda_ms=1;
+	}else
+	{	
+		double minDist = fabs(ErrorMean[index -1] - minimumErr);
+		for(i=index-1;i>0;i--) 
 		{
-			minDist = distance;
-			tempIlambda_ms = i + 1;
+			distance = fabs(ErrorMean[i] - minimumErr);
+			if(distance <minDist)
+			{
+				minDist = distance;
+				tempIlambda_ms = i + 1;
+			}
 		}
 	}
 	ilambda_ms = tempIlambda_ms;
@@ -7386,33 +6616,36 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	//find the min of ErrorEN;
 	double minEN 			= ErrorEN[0];
 	int ind_minEN 			= 0;
-	for(i_alpha = 1;i_alpha<L_alpha;i_alpha++)
-	{
-		if(minEN > ErrorEN[i_alpha])
-		{
-			minEN 			= ErrorEN[i_alpha];
-			ind_minEN 		= i_alpha;
-		}	
-	}
 	
-	//R_package Version 2: EN_MPI_epsilon	
-		//version V1_1delta.c
-	double minErr_ = ErrorEN_min[ind_minEN] + steEN_min[ind_minEN];
-	double distance;
-	int temIndex = ind_minEN; //index
-	for(i_alpha = ind_minEN-1;i_alpha>=0;i_alpha--)
+	if(L_alpha>1)
 	{
-		distance = ErrorEN[i_alpha] - minErr_;
-		if(distance <=0)
+		for(i_alpha = 1;i_alpha<L_alpha;i_alpha++)
 		{
-			temIndex = i_alpha;
+			if(minEN > ErrorEN[i_alpha])
+			{
+				minEN 			= ErrorEN[i_alpha];
+				ind_minEN 		= i_alpha;
+			}	
 		}
+		
+		//R_package Version 2: EN_MPI_epsilon	
+			//version V1_1delta.c
+		double minErr_ = ErrorEN_min[ind_minEN] + steEN_min[ind_minEN];
+		double distance;
+		int temIndex = ind_minEN; //index
+		for(i_alpha = ind_minEN-1;i_alpha>=0;i_alpha--)
+		{
+			distance = ErrorEN[i_alpha] - minErr_;
+			if(distance <=0)
+			{
+				temIndex = i_alpha;
+			}
+		}
+		ind_minEN = temIndex;
+		//version V1_1delta.c
+		//R_package Version 2: EN_MPI_epsilon	
+		
 	}
-	ind_minEN = temIndex;
-	//version V1_1delta.c
-	//R_package Version 2: EN_MPI_epsilon	
-	
-	
 	//sigma2 					= sigmaEN[ind_minEN];
 	ilambda_cv_ms 			= lambdaEN[ind_minEN];
 	alpha_factor  			= alpha_factors[ind_minEN];
@@ -7653,33 +6886,7 @@ void mainSML_adaENpointLmabda(double *Y, double *X, int *m, int *n, int *Missing
 	
 	//find the min of ErrorEN;
 	double minEN 			= ErrorEN[0];
-	int ind_minEN 			= 0;
-	for(i_alpha = 1;i_alpha<L_alpha;i_alpha++)
-	{
-		if(minEN > ErrorEN[i_alpha])
-		{
-			minEN 			= ErrorEN[i_alpha];
-			ind_minEN 		= i_alpha;
-		}	
-	}
-	
-		//R_package Version 2: EN_MPI_epsilon	
-		//version V1_1delta.c
-	double minErr_ = ErrorEN_min[ind_minEN] + steEN_min[ind_minEN];
-	double distance;
-	int temIndex = ind_minEN; //index
-	for(i_alpha = ind_minEN-1;i_alpha>=0;i_alpha--)
-	{
-		distance = ErrorEN[i_alpha] - minErr_;
-		if(distance <=0)
-		{
-			temIndex = i_alpha;
-		}
-	}
-	ind_minEN = temIndex;
-	//version V1_1delta.c
-	//R_package Version 2: EN_MPI_epsilon	
-	
+	int ind_minEN 			= 0;	
 	
 	//sigma2 					= sigmaEN[ind_minEN];
 	ilambda_cv_ms 			= lambdaEN[ind_minEN];
