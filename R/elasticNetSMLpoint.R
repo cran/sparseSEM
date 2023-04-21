@@ -2,7 +2,7 @@
 elasticNetSMLpoint <- function(Y,X,Missing,B,alpha_factor = 1, lambda_factor =0.01 ,Verbose = 0){
 	M 					= nrow(Y);
 	N 					= ncol(Y);
-	cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
+	if(Verbose>=0) cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
 	f 					= matrix(1,M,1);
 	stat 				= rep(0,6);
 #------------------------------------------------------R_package parameter
@@ -37,7 +37,7 @@ elasticNetSMLpoint <- function(Y,X,Missing,B,alpha_factor = 1, lambda_factor =0.
 	tEnd 				= proc.time();
 	simTime 			= tEnd - tStart;
 	#dyn.unload("elasticSMLv1.dll")
-	cat("\t computation time:", simTime[1], "sec\n");
+	if(Verbose>=0) cat("\t computation time:", simTime[1], "sec\n");
 
 	Bout = matrix(output$B,nrow= M, ncol = M, byrow = F);
 	fout = matrix(output$f,nrow= M, ncol = 1, byrow = F);

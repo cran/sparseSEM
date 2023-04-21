@@ -2,7 +2,7 @@
 elasticNetSMLcv <- function(Y,X,Missing,B,alpha_factors = seq(1,0.05, -0.05), lambda_factors =10^seq(-0.2,-4,-0.2) ,Verbose = 0){
 	M 					= nrow(Y);
 	N 					= ncol(Y);
-	cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
+	if(Verbose>=0) cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
 	f 					= matrix(1,M,1);
 	stat 				= rep(0,6);
 #------------------------------------------------------R_package parameter
@@ -33,7 +33,7 @@ elasticNetSMLcv <- function(Y,X,Missing,B,alpha_factors = seq(1,0.05, -0.05), la
 	tEnd 				= proc.time();
 	simTime 			= tEnd - tStart;
 	#dyn.unload("elasticSMLv1.dll")
-	cat("\t computation time:", simTime[1], "sec\n");
+	if(Verbose>=0) cat("\t computation time:", simTime[1], "sec\n");
 
 	Bout = matrix(output$B,nrow= M, ncol = M, byrow = F);
 	fout = matrix(output$f,nrow= M, ncol = 1, byrow = F);

@@ -1,2 +1,2 @@
-useDynLib(sparseSEM)
+useDynLib(sparseSEM, .registration = TRUE)
 exportPattern("^[^\\.]")

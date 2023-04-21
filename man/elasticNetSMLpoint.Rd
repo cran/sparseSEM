@@ -50,7 +50,7 @@
 }
 \references{
 1. Cai, X., Bazerque, J.A., and Giannakis, G.B. (2013). Inference of Gene Regulatory Networks with Sparse Structural Equation Models Exploiting Genetic Perturbations. PLoS Comput Biol 9, e1003068. \cr
-2. Huang A., Bazerque J. A., Giannakis G. B., DUroso G., Myers C. L., Cai X., Elastic Net algorithm for inferring gene regulatory networks based on structural equation models, to be submitted. \cr
+2. Huang, A. (2014). "Sparse model learning for inferring genotype and phenotype associations." Ph.D Dissertation. University of Miami(1186).\cr \cr	
 }
 \author{Anhui Huang; Dept of Electrical and Computer Engineering, Univ of Miami, Coral Gables, FL}
 \note{
@@ -69,8 +69,9 @@
 	data(Y);
 	data(X);
 	data(Missing);
-	OUT <- elasticNetSMLpoint(Y, X, Missing, B,
+\dontrun{	OUT <- elasticNetSMLpoint(Y, X, Missing, B,
 		alpha_factor = 0.5, lambda_factor = 0.1, Verbose = 1);
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
