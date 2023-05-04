@@ -6,47 +6,80 @@
 }
 \description{
 	While elasticNetSML function has a set of default (alpha, lambda) and the optimal 
-	one is chosen by 5 fold cv, elasticNetSMLcv tests the combination of a set of 
+	one is chosen by k=5 fold cv, elasticNetSMLcv tests the combination of a set of 
 	alpha an lambda, and choose one as the optimal parameters.
-	elasticNetSMLcv should be combined with elasticNetSMLpoint to obtain the network 
-	inference.
-	For each alpha from the set of alphas provided, the function perform 5 fold CV for 
+
+	For each alpha from the set of alphas provided, the function perform k-fold CV for 
 	each user supplied lambda to determine the optimal alpha and lambda for the data. }
 \usage{
-elasticNetSMLcv(Y, X, Missing, B, alpha_factors,lambda_factors, Verbose)
+elasticNetSMLcv(Y, X, Missing, B, alpha_factors,lambda_factors,kFold, Verbose)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{Y}{
-	gene expression M by N matrix
+	The observed node response data with dimension of M by N. Y is normalized inside the function.
 }
   \item{X}{
-	cis_eQTL M by N matrix
+	The network node attribute matrix with dimension of M by N, with M being the number of nodes,
+      and N being the number of samples. Theoretically, X can be L by N matrix, with L being the total
+      node attributes. However, in current implementation, each node only allows one and only one attribute.
+      If you have more than one attributes for some nodes,  please consider selecting the top one by either
+      correlation or principal component methods.
+      X is normalized inside the function.
 }
   \item{Missing}{
-	missing data in Y
+	M by N matrix corresponding to elements of Y. 0 denotes no missing, while 1 denotes missing.
+      If a node j in sample i has a missing label (Missing[j,i] = 1), the node response Y[j,i] is set to 0.
 }
   \item{B}{
-	true network topology if available
+	 For a network with M nodes, B is the M by M adjacency matrix.
+      If data is simulated/with known true network topology (i.e., known adjacency matrix), the Power
+      of detection (PD) and False Discovery Rate (FDR) is computed in the output parameter 'statistics'.
+  
+      If the true network topology is unknown, B is optional, and the PD/FDR in output parameter
+      'statistics' should be ignored.
 }
   \item{alpha_factors}{
-	alpha_factors: the set of alphas to be tested, and is in range of (0, 1);
+	The set of candidate alpha values.  Default is seq(start = 0.95, to = 0.05, step = -0.05)
 }
   \item{lambda_factors}{
-	penalty lambda_factor: the set of lambda to be tested, and is in range of (0, 1);
+	The set of candidate lambda values. Default is 10^seq(start =1, to = 0.001, step = -0.2)
+}
+  \item{kFold}{
+  k-fold cross validation, default k=5
 }
   \item{Verbose}{
 	describe the information output from 0 - 10, larger number means more output
 }
+
 }
 \details{
 	the function perform CV and parameter inference, calculate power and FDR
 }
 \value{
 
-	\item{Bout}{the matrix B from sparseSEM}
-	\item{fout}{f: the weight for matrix X}
-	\item{stat}{compute the power and FDR statistics if the ture topology is provided}
+	\item{Bout}{
+	the computed weights for the network topology. B[i,j] = 0 means there is no edge between node i and j;
+        B[i,j]!=0 denotes an (undirected) edge between note i and j.
+}
+	\item{fout}{
+	f is 1 by M array keeping the weight for X (in SEM: Y = BY + FX + e). Theoretically, F can be M by L matrix,
+        with M being the number of nodes, and L being the total node attributes. However, in current implementation,
+        each node only allows one and only one attribute.
+        If you have more than one attributes for some nodes, please consider selecting the top one by either
+        correlation or principal component methods.
+	
+	}
+	\item{stat}{
+	statistics is 1x6 array keeping record of:
+                1. correct positive
+                2. total positive
+                3. false positive
+                4. positive detected
+                5. Power of detection (PD) = correct positive/total positive
+                6. False Discovery Rate (FDR) = false positive/positive detected
+	
+	}
 	\item{simTime}{computational time}
 	\item{residual}{only meaningful for 1 alpha: \cr
 					col1: lambdas; \cr
@@ -64,6 +97,7 @@ elasticNetSMLcv(Y, X, Missing, B, alpha_factors,lambda_factors, Verbose)
 		2) elasticNetSMLcv: user supplied alphas (one or more), lambdas; compute the optimal parameters and network parameters \cr
 		3) elasticNetSMLpoint: user supplied one alpha and one lambda, compute the network parameters 
 		
+		User is responsible to set the random seed to guarantee repeatable results.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -75,7 +109,7 @@ elasticNetSMLcv(Y, X, Missing, B, alpha_factors,lambda_factors, Verbose)
 	data(X);
 	data(Missing);
 	\dontrun{OUT <- elasticNetSMLcv(Y, X, Missing, B, alpha_factors = c(0.75, 0.5, 0.25),
-	lambda_factors=c(0.1, 0.01, 0.001), Verbose = 1);
+	lambda_factors=c(0.1, 0.01, 0.001), kFold = 5, Verbose  = 1);
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

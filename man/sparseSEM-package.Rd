@@ -8,7 +8,7 @@
 \description{
 	state-of-the-art sparse aware maximum likelihood function for structural equation models.
 	Two penalty functions including the Lasso and Elastic net available.
-	Version 3.8: Fix CRAN manual inspection
+	Version 3.8-1: add output for cross validation k-fold mean and ste
 				
 				
 }

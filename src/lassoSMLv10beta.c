@@ -908,7 +908,7 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 		{
 			if(s[i] >0)
 			{ 	//
-				if(verbose>6) Rprintf("\t\t\t\t\t updating gene %d \n",i);
+				if(verbose>6) Rprintf("\t\t\t\t\t updating Node %d \n",i);
 				ei[i] = 1;
 
 
@@ -956,7 +956,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 							if (fabs(m_ij)<1e-10) //go to the linear equation 
 							{
 								//
-								if(verbose>7) Rprintf("\t\t\t\t\t\t\t gene %d \t interact with gene %d.\tLinear equation\n",i,j);
+								if(verbose>7) Rprintf("\t\t\t\t\t\t\t Node %d \t interact with Node %d.\tLinear equation\n",i,j);
 								//
 								Bij = (beta_ij-lambdaW)/r_ij;
 
@@ -977,7 +977,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 							}else //m_ij ~=0 go to the quadratic equation
 							{
 								//
-								if(verbose>7) Rprintf("\t\t\t\t\t\t\t gene %d \t interact with gene %d.\tQuadratic equation\n",i,j);
+								if(verbose>7) Rprintf("\t\t\t\t\t\t\t Node %d \t interact with Node %d.\tQuadratic equation\n",i,j);
 
 								d_ij = 1/m_ij + B[j*M+i];
 								theta_ijp = r_ij*d_ij + beta_ij - lambdaW;
@@ -1055,7 +1055,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 
 				f[i] = f0[i] - BF1;
 				ei[i] = 0; // re-set ei for next i
-			}else//s[i]  no un-zero weight in this gene
+			}else//s[i]  no un-zero weight in this Node
 			{
 				readPtr = &B[i];
 				F77_CALL(dcopy)(&M,&toyZero,&inc0,readPtr,&ldM);
@@ -1250,7 +1250,7 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	double d_ij, theta_ijp,k_ijp,q_ijp,Bijpp, Bijpm; //case (14)
 	double q_ijm, theta_ijm, Bijmm, Bijmp,Lss,candsBij,LssCands;
 	
-	//converge of gene i
+	//converge of Node i
 	double dB,ziDb,BF1;
 	
 	//converge of while
@@ -1273,7 +1273,7 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 		{
 			if(s[i] >0)
 			{ 	//
-				if(verbose>6) Rprintf("\t\t\t\t\t updating gene %d \n",i);
+				if(verbose>6) Rprintf("\t\t\t\t\t updating Node %d \n",i);
 				//
 				ei[i] = 1;
 
@@ -1321,7 +1321,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 							if (fabs(m_ij)<1e-10) //go to the linear equation 
 							{
 								//
-								if(verbose>7) Rprintf("\t\t\t\t\t\t\t gene %d \t interact with gene %d.\tLinear equation\n",i,j);
+								if(verbose>7) Rprintf("\t\t\t\t\t\t\t Node %d \t interact with Node %d.\tLinear equation\n",i,j);
 								//
 								Bij = (beta_ij-lambdaW)/r_ij;
 								if(Bij>0) 
@@ -1341,7 +1341,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 							}else //m_ij ~=0 go to the quadratic equation
 							{
 								//
-								if(verbose>7) Rprintf("\t\t\t\t\t\t\t gene %d \t interact with gene %d.\tQuadratic equation\n",i,j);
+								if(verbose>7) Rprintf("\t\t\t\t\t\t\t Node %d \t interact with Node %d.\tQuadratic equation\n",i,j);
 								//
 								//assume Bij >0
 								d_ij = 1/m_ij + B[j*M+i];
@@ -1421,7 +1421,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 
 				f[i] = f0[i] - BF1;
 				ei[i] = 0; // re-set ei for next i
-			}else//s[i]  no un-zero weight in this gene
+			}else//s[i]  no un-zero weight in this Node
 			{
 				readPtr = &B[i];
 				F77_CALL(dcopy)(&M,&toyZero,&inc0,readPtr,&ldM);
@@ -1501,7 +1501,7 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 			if(s[i] >0)
 			{
 				//
-				if(verbose>6) Rprintf("\t\t updating gene %d \n",i);
+				if(verbose>6) Rprintf("\t\t updating Node %d \n",i);
 				//
 			ei[i] = 1;
 
@@ -1542,13 +1542,13 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 						if (fabs(m_ij)<1e-10) //go to the linear equation 
 						{
 							//
-							if(verbose>7) Rprintf("\t\t\t gene %d \t interact with gene %d.\tLinear equation\n",i,j);
+							if(verbose>7) Rprintf("\t\t\t Node %d \t interact with Node %d.\tLinear equation\n",i,j);
 							B[j*M+i] = beta_ij/r_ij;
 
 						}else //m_ij ~=0 go to the quadratic equation
 						{
 							//
-							if(verbose>7) Rprintf("\t\t\t gene %d \t interact with gene %d.\tQuadratic equation\n",i,j);
+							if(verbose>7) Rprintf("\t\t\t Node %d \t interact with Node %d.\tQuadratic equation\n",i,j);
 							//					
 
 							d_ij = 1/m_ij + B[j*M+i];
@@ -2859,6 +2859,7 @@ if(i_alpha ==0)
 
 	if(verbose>1) Rprintf("\t\tExit Function: cv_support. optimal lambda index: %d.\n\n", ilambda_ms);
 
+
 	Free(NOISE);
 	Free(ImB);
 	
@@ -2902,7 +2903,9 @@ if(i_alpha ==0)
 
 void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*B, double *f,double*stat,
 			double*alpha_factors,int *nAlpha, 	// must be scalar
-			double *lambda_factors, int *nLambda, double *mseStd, int*VB) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
+			double *lambda_factors, int *nLambda,
+			double*mse,double*mseSte,
+			double *mseStd, int*kFold, int*VB) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
 {
 
 	int M, N, i, j,index,verbose;
@@ -2940,7 +2943,7 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	
 	//call cv_gene_nets_support ------------------------SYSTEM PARAMETERS
 	int maxiter 			= 500;
-	int Kcv 				= 5;
+	int Kcv 				= kFold[0];
 
 	double step 	= -0.2;
 	//rho factor
@@ -2987,9 +2990,12 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 
 	int i_alpha;
 	double alpha_factor;
+	
+	//--- ouput to R
+	double*readPtr1, *readPtr2;
 	for(i_alpha=0;i_alpha<L_alpha;i_alpha++)
 	{	
-		alpha_factor 		= alpha_factors[i_alpha];		
+	  alpha_factor 		= alpha_factors[i_alpha];		
 		
 		ilambda_cv_ms = cv_gene_nets_support_adaENcv(Y, X, Kcv,lambda_factors, rho_factors, 
 			maxiter, M, N,Nlambdas, Nrho,verbose,W, &sigma2,
@@ -2997,6 +3003,18 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 			ErrorEN_min,steEN_min);	 //version V1_1delta.c			
 			
 		lambdaEN[i_alpha] 	= ilambda_cv_ms;
+		
+		
+		//--- output to R: mse, mseSte
+		readPtr1 = &mse[i_alpha*Nlambdas];
+		readPtr2 = &mseStd[0];
+		F77_CALL(dcopy)(&Nlambdas,readPtr2,&inci,readPtr1,&incj);
+		readPtr1 = &mseSte[i_alpha*Nlambdas];
+		readPtr2 = &mseStd[Nlambdas];
+		F77_CALL(dcopy)(&Nlambdas,readPtr2,&inci,readPtr1,&incj);
+		
+		
+		
 	}
 	
 	//find the min of ErrorEN;
@@ -3102,6 +3120,10 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	stat[4] = stat[0]/stat[1];
 	stat[5] = stat[2]/stat[3];
 	if(verbose==0) Rprintf("Step 5: Finish calculation; detection power in stat vector.\n");
+	
+
+	
+	
 	Free(Strue);
 	Free(meanY);
 	Free(meanX);

@@ -2,7 +2,7 @@
 elasticNetSMLpoint <- function(Y,X,Missing,B,alpha_factor = 1, lambda_factor =0.01 ,Verbose = 0){
 	M 					= nrow(Y);
 	N 					= ncol(Y);
-	if(Verbose>=0) cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
+	if(Verbose>=0) cat("\telastic net SML;",M, "Nodes, ", N , "samples; Verbose: ", Verbose, "\n\n")
 	f 					= matrix(1,M,1);
 	stat 				= rep(0,6);
 #------------------------------------------------------R_package parameter

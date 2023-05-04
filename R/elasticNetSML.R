@@ -2,7 +2,7 @@ elasticNetSML <-
 function(Y,X,Missing,B,Verbose = 0){
 	M = nrow(Y);
 	N = ncol(Y);
-	if(Verbose>=0) cat("\telastic net SML version_1;",M, "Genes, ", N , "samples; Verbose: ", Verbose, "\n\n")
+	if(Verbose>=0) cat("\telastic net SML;",M, "Nodes, ", N , "samples; Verbose: ", Verbose, "\n\n")
 	f = matrix(1,M,1);
 	stat = rep(0,6);
 
@@ -28,7 +28,7 @@ function(Y,X,Missing,B,Verbose = 0){
 	Bout = matrix(output$B,nrow= M, ncol = M, byrow = F);
 	fout = matrix(output$f,nrow= M, ncol = 1, byrow = F);
 	stat = matrix(output$stat,nrow = 6,ncol = 1, byrow = F);
-	stat
+
 
 	SMLresult 			<- list(Bout,fout,stat,simTime[1]);
 	names(SMLresult)	<-c("weight","F","statistics","simTime")
