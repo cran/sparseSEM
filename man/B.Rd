@@ -9,7 +9,7 @@
 }
 \usage{data(B)}
 \format{
-	The format is: M by M, where M is the number of vertices (genes)
+	The format is: M by M, where M is the number of vertices 
 	num [1:30, 1:30] 0 0 0 0 0 ...
 }
 \details{

@@ -7,16 +7,27 @@
 }
 \description{
 	state-of-the-art sparse aware maximum likelihood function for structural equation models.
-	Two penalty functions including the Lasso and Elastic net available.
-	Version 3.8-1: add output for cross validation k-fold mean and ste
+	Two penalty functions including the Lasso and Elastic-net available. \cr
+	For users new to this package, function elasticNetSML() provides the simplified entry point: 
+	Missing matrix can be all 0 (none or uknown), so as B matrix (unknow connections in the network), 
+	thus only Y and X are mandatory. \cr
+	
+		Once users get the idea of what the package and the function does, the package also
+	provides other functions with more flexibility to allow fine tuning the parameters: \cr
+	Function elasticNetSMLcv() user provides alphas (one or more) and lambdas; the function then computes the optimal parameters and network parameters; \cr
+	Function elasticNetSMLpoint(). user provides one alpha and one lambda, and the function computes the network parameters.
 				
+	Note:
+	 Regularization path: the lasso-strong rule is applied, thus the path is run through lambda_max to lambda_opt,
+        where lambda_max is the lambda that keeps only 1 non-zero edge, and lambda_opt is the optimal lambda from CV. \cr
+        
 				
 }
 \details{
 \tabular{ll}{
 Package: \tab sparseSEM\cr
 Type: \tab Package\cr
-Version: \tab 3.2\cr
+Version: \tab 3.8-2\cr
 Date: \tab 2023-04-17\cr
 License: \tab GPL\cr
 }

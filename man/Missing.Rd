@@ -2,7 +2,7 @@
 \alias{Missing}
 \docType{data}
 \title{
-	Missing gene expression data
+	Missing Network Node dependent variable data
 }
 \description{
 	M by N matrix corresponding to elements of Y. 0 denotes no missing, while 1 denotes missing

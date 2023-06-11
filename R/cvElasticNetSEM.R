@@ -1,8 +1,18 @@
-
-elasticNetSMLcv <- function(Y,X,Missing,B,alpha_factors = seq(1,0.05, -0.05), lambda_factors =10^seq(-0.2,-4,-0.2), kFold = 5, Verbose = 0){
+#'cv function in lasso secenario: generally select (alpha, labmda ) that is within min(mse) + 1ste
+#'
+#'
+elasticNetSEMcv <- function(Y,X,Missing = NULL,B=NULL,alpha_factors = seq(1,0.05, -0.05), lambda_factors =10^seq(-0.2,-4,-0.2), kFold = 5, verbose = 0){
 	M 					= nrow(Y);
 	N 					= ncol(Y);
-	if(Verbose>=0) cat("\telastic net SML;",M, "Nodes, ", N , "samples; Verbose: ", Verbose, "\n\n")
+	if (is.null(Missing)) Missing = matrix(0,M, N);
+	if (is.null(B)) B = matrix(0,M,M);
+	if(nrow(X) !=M){
+	  if(verbose>=0) cat("error: sparseSEM currently support only the same dimension of X, Y.");
+	  return( NULL);
+	  
+	}
+	this.call=match.call()#returns a call in which all of the specified arguments are specified by their full names.
+	if(verbose>=0) cat("\telastic net SML;",M, "Nodes, ", N , "samples; verbose: ", verbose, "\n\n")
 	f 					= matrix(1,M,1);
 	stat 				= rep(0,6);
 #------------------------------------------------------R_package parameter
@@ -41,17 +51,20 @@ elasticNetSMLcv <- function(Y,X,Missing,B,alpha_factors = seq(1,0.05, -0.05), la
 				mseSte 	= as.double(mseSte),
 				mseStd 	= as.double(mseStd),
 				kFold   = as.integer(kFold),
-				verbose = as.integer(Verbose),
+				para_alpha = as.double(0),
+				para_lambda= as.double(0),
+				verbose = as.integer(verbose),
 				package = "sparseSEM"); 
 
 	tEnd 				= proc.time();
 	simTime 			= tEnd - tStart;
 	#dyn.unload("elasticSMLv1.dll")
-	if(Verbose>=0) cat("\t computation time:", simTime[1], "sec\n");
+	if(verbose>=0) cat("\t computation time:", simTime[1], "sec\n");
 
 	Bout = matrix(output$B,nrow= M, ncol = M, byrow = F);
 	fout = matrix(output$f,nrow= M, ncol = 1, byrow = F);
 	stat = matrix(output$stat,nrow = 6,ncol = 1, byrow = F);
+	rownames(stat) <- c("correct_positive", "total_ground truth", "false_positive", "true_positive", "Power", "FDR")
 #------------------------------------------------------R_package parameter
 #	mseStd = matrix(output$mseStd,nrow= nLambda, ncol = 2, byrow = F);
 	mse   = matrix(output$mse,nrow = nAlpha*nLambda, ncol =1, byrow= F)
@@ -61,10 +74,15 @@ elasticNetSMLcv <- function(Y,X,Missing,B,alpha_factors = seq(1,0.05, -0.05), la
 	cvResults = cbind(parameters,mse,mseSte);
 	colnames(cvResults)<-c("alpha","lambda","mean Error", "Ste");
 #------------------------------------------------------R_package parameter
-
-
-	SMLresult 			<- list(Bout,fout,stat,simTime[1],cvResults);
-	names(SMLresult)	<-c("weight","F","statistics","simTime","cv")
+	hyperparameters= list(output$para_alpha, output$para_lambda);
+	names(hyperparameters) = c("alpha", "lambda");
+  fit = list(hyperparameters, Bout,fout,stat, simTime[1])
+	
+  names(fit) = c("hyperparameter", "weight","F","statistics","simTime")
+  fit$call=this.call
+  
+  SMLresult 			<- list(cvResults, fit);
+	names(SMLresult)	<-c("cv", "fit")
 	return(SMLresult)
 }
 

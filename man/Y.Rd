@@ -5,7 +5,7 @@
 	Gene expression matrix
 }
 \description{
-	Y is the M by N matrix describes the expression profile of M genes in N samples
+	Y is the M by N matrix describes the dependent attribute of M nodes in N samples
 }
 \usage{data(Y)}
 \format{

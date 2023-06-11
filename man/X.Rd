@@ -5,7 +5,7 @@
 	Genotype matrix
 }
 \description{
-	X is the M by N matrix corresponding to M cis-eQTL for M genes
+	X is the M by N matrix corresponding to M network nodes from N samples.
 }
 \usage{data(X)}
 \format{
@@ -13,7 +13,9 @@
  int [1:30, 1:200] 2 1 3 1 2 3 2 1 2 2 ...
 }
 \details{
-	current implementation only consider 1 eQTL per gene
+	current implementation only consider 1 inpepedent attribute per node. If users 
+	have more than one attributes for some nodes,  please consider selecting the 
+	top one by either correlation or principal component methods.
 }
 
 \references{

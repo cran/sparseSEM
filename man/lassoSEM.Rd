@@ -1,15 +1,15 @@
-\name{lassoSML}
-\alias{lassoSML}
+\name{lassoSEM}
+\alias{lassoSEM}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-	The Lasso penalty for SML
+	The Lasso penalty for SEM
 }
 \description{
 	Upon lambda_max to lambda_min in 20 step, the function compute 5 fold CV 
 	to determine the optimal lambda for the data. 
 }
 \usage{
-	lassoSML(Y, X, Missing, B, Verbose = 5)
+	lassoSEM(Y, X, Missing, B, verbose = 5)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,7 +17,12 @@
 	gene expression M by N matrix
 }
   \item{X}{
-	cis_eQTL M by N matrix
+	The network node attribute matrix with dimension of M by N. Theoretically, X can be L by N matrix, with L being the total
+      node attributes. In current implementation, each node only allows one and only one attribute. \cr
+      If you have more than one attributes for some nodes,  please consider selecting the top one by either
+      correlation or principal component methods.  \cr
+      If for some nodes there is no attribute available, fill in the rows with all zeros.  See the yeast data `yeast.rda` for example. \cr
+      X is normalized inside the function.
 }
   \item{Missing}{
 	missing data in Y
@@ -25,8 +30,8 @@
   \item{B}{
 	true network topology if available
 }
-  \item{Verbose}{
-	describe the information output from 0 - 10, larger number means more output
+  \item{verbose}{
+	describe the information output from -1 - 10, larger number means more output
 }
 }
 \details{
@@ -53,7 +58,7 @@
 	data(Y);
 	data(X);
 	data(Missing);
-	\dontrun{OUT <- lassoSML(Y, X, Missing, B, Verbose = 0); 
+	\dontrun{OUT <- lassoSEM(Y, X, Missing, B, verbose = 0); 
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

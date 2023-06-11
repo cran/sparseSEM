@@ -2168,7 +2168,10 @@ if(i_alpha ==0)
 } //end of cv_gene_nets_support		
 
 
-void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, double *f,double*stat,int*VB)
+void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, double *f,double*stat,
+                   double*out_alpha,
+                   double*out_lambda,
+                   int*VB)
 {
 	int M, N, i, j,index,verbose;
 	int inci = 1;
@@ -2350,6 +2353,9 @@ if(verbose>0) Rprintf("\tlambda: %f\n", lambda);
 		QlambdaMiddleCenter(Ycopy,Xcopy, Q,B,f,sigma2,M, N,QIBinv); //same set of Y,X 		<-- mueL not needed
 		lambda_factor_prev = lambda_factors[ilambda];
 	}//ilambda: selection path
+	
+	out_alpha[0] = alpha_factor;
+	out_lambda[0] = lambda_factor;
 	stat[0] = 0;// correct positive
 	stat[2] = 0;//false positive
 	stat[3] = 0;//positive detected
@@ -2905,7 +2911,10 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 			double*alpha_factors,int *nAlpha, 	// must be scalar
 			double *lambda_factors, int *nLambda,
 			double*mse,double*mseSte,
-			double *mseStd, int*kFold, int*VB) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
+			double *mseStd, int*kFold, 
+			double*out_alpha,
+			double*out_lambda,
+			int*VB) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
 {
 
 	int M, N, i, j,index,verbose;
@@ -3094,7 +3103,8 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 		lambda_factor_prev = lambda_factors[ilambda];
 
 	}//ilambda; selection path
-
+	out_alpha[0] = alpha_factor;
+	out_lambda[0] = lambda_factor;
 	stat[0] = 0;// correct positive
 	stat[2] = 0;//false positive
 	stat[3] = 0;//positive detected
@@ -3149,7 +3159,7 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 //1.  	User decided lambda
 //2.	Stability selection
 
-void mainSML_adaENpointLmabda(double *Y, double *X, int *m, int *n, int *Missing, double*B, double *f,double*stat,
+void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing, double*B, double *f,double*stat,
 			double*alpha_factors,//int *nAlpha, 	 must be scalar
 			double *lambda_factors, int *nLambda, double *mseStd, int*VB) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
 {
@@ -3356,7 +3366,8 @@ void mainSML_adaENpointLmabda(double *Y, double *X, int *m, int *n, int *Missing
 void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *Missing, 
 			double*B, double *f,double*stat,double*alpha_factors,int *nAlpha, 
 			double *lambda_factors, int *nLambda, double *mseStd, int*VB,
-			double *Bout) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
+			double *Bout,
+			int*kFold) 						// mseStd: nLmabda x 2 matrix, keep mse + std 
 {
 	int M, N, i, j,index,verbose;
 	int inci 				= 1;
@@ -3393,7 +3404,7 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	
 	//call cv_gene_nets_support ------------------------SYSTEM PARAMETERS
 	int maxiter 			= 500;
-	int Kcv 				= 5;
+	int Kcv 				= kFold[0];
 
 	double step 	= -0.2;
 	//rho factor

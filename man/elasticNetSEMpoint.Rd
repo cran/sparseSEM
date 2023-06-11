@@ -1,44 +1,42 @@
-\name{elasticNetSMLpoint}
-\alias{elasticNetSMLpoint}
+\name{elasticNetSEMpoint}
+\alias{elasticNetSEMpoint}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 	The Elastic Net penalty for SEM
 }
 \description{
-	For user supplied one alpha in range of (0,1) and one lambda, 
+	For user provided one alpha in range (0,1) and one lambda_factor in range (0,1), 
 	the function perform selection path from lambda_max to lambda 
 	to determine the optimal network topology. 
 	
-	In the case of the grid provided in elasticNetSMLcv() function may not 
+	In the case of the grid search in elasticNetSMLcv() function may not 
 	be granular enough and user would like to explore/twist (alpha, lambda)
 	a little bit, this function provides the solution.
 	
-	Note: While in elasticNetSML() and elasticNetSMLcv(), k-fold CV was conducted 
-	to determine the optimal (alpha, lambda), elasticNetSMLpoint() does not.
 	
 	}
 \usage{
-	elasticNetSMLpoint(Y, X, Missing, B, alpha_factor, lambda_factor, Verbose)
+	elasticNetSEMpoint(Y, X, Missing, B, alpha_factor, lambda_factor, verbose)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{Y}{
-	The observed node response data with dimension of M by N. Y is normalized inside the function.
+	The observed node response data with dimension of M (nodes) by N (samples). Y is normalized inside the function.
 }
   \item{X}{
-	The network node attribute matrix with dimension of M by N, with M being the number of nodes,
-      and N being the number of samples. Theoretically, X can be L by N matrix, with L being the total
-      node attributes. However, in current implementation, each node only allows one and only one attribute.
+	The network node attribute matrix with dimension of M by N. Theoretically, X can be L by N matrix, with L being the total
+      node attributes. In current implementation, each node only allows one and only one attribute. \cr
       If you have more than one attributes for some nodes,  please consider selecting the top one by either
-      correlation or principal component methods.
+      correlation or principal component methods.  \cr
+      If for some nodes there is no attribute available, fill in the rows with all zeros.  See the yeast data `yeast.rda` for example. \cr
       X is normalized inside the function.
 }
   \item{Missing}{
-	M by N matrix corresponding to elements of Y. 0 denotes no missing, while 1 denotes missing.
-      If a node j in sample i has a missing label (Missing[j,i] = 1), the node response Y[j,i] is set to 0.
+	Optional M by N matrix corresponding to elements of Y. 0 denotes not missing, and 1 denotes missing.
+      If a node i in sample j has the label missing (Missing[i,j] = 1), then Y[i,j] is set to 0.
 }
   \item{B}{
-	 For a network with M nodes, B is the M by M adjacency matrix.
+	 Optional input. For a network with M nodes, B is the M by M adjacency matrix.
       If data is simulated/with known true network topology (i.e., known adjacency matrix), the Power
       of detection (PD) and False Discovery Rate (FDR) is computed in the output parameter 'statistics'.
   
@@ -51,8 +49,8 @@
   \item{lambda_factor}{
 	penalty lambda_factor: in range of (0, 1); must be scalar
 }
-  \item{Verbose}{
-	describe the information output from 0 - 10, larger number means more output
+  \item{verbose}{
+	describe the information output from -1 - 10, larger number means more output
 }
 }
 \details{
@@ -73,17 +71,17 @@
 	
 	}
 	\item{stat}{
-	statistics is 1x6 array keeping record of:
-                1. correct positive
-                2. total positive
-                3. false positive
-                4. positive detected
-                5. Power of detection (PD) = correct positive/total positive
+	statistics is 1x6 array keeping record of: \cr
+                1. correct positive \cr
+                2. total positive   \cr
+                3. false positive   \cr
+                4. positive detected  \cr
+                5. Power of detection (PD) = correct positive/total positive  \cr
                 6. False Discovery Rate (FDR) = false positive/positive detected
 	
 	}
 	\item{simTime}{computational time}
-
+  \item{call}{the call that produced this object}	
 }
 \references{
 1. Cai, X., Bazerque, J.A., and Giannakis, G.B. (2013). Inference of Gene Regulatory Networks with Sparse Structural Equation Models Exploiting Genetic Perturbations. PLoS Comput Biol 9, e1003068. \cr
@@ -94,7 +92,7 @@
 		Difference in three functions:\cr
 		1) elasticNetSML: Default alpha = 0.95: -0.05: 0.05; default 20 lambdas \cr
 		2) elasticNetSMLcv: user supplied alphas (one or more), lambdas; compute the optimal parameters and network parameters \cr
-		3) elasticNetSMLpoint: user supplied one alpha and one lambda, compute the network parameters 
+		3) elasticNetSEMpoint: user supplied one alpha and one lambda, compute the network parameters 
 		
 }
 
@@ -106,11 +104,11 @@
 	data(Y);
 	data(X);
 	data(Missing);
-\dontrun{	OUT <- elasticNetSMLpoint(Y, X, Missing, B,
-		alpha_factor = 0.5, lambda_factor = 0.1, Verbose = 1);
+\dontrun{	OUT <- elasticNetSEMpoint(Y, X, Missing, B,
+		alpha_factor = 0.5, lambda_factor = 0.1, verbose = 1);
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{Elastic Net}
+\keyword{Elastic_Net}
 \keyword{sparseSEM}
