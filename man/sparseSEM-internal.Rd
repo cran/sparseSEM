@@ -4,7 +4,7 @@
 
 \description{Internal sparseSEM function for Stability Selection}
 \usage{
-	currentSTS = enSEM_STS(i,Y,X,Missing ,B,STS_para,kFold,verbose);
+	enSEM_STS(i,Y,X,Missing ,B,STS_para,kFold,verbose);
 	
 }
 \author{Anhui Huang}

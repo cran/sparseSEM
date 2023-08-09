@@ -91,6 +91,7 @@ enSEM_stability_selection <- function(Y,
   qAB 				= matrix(0,MM,nStep); #each effect: how many times selected with this ab
   for(i_ab in 1:nStep)
   {
+    #re-set qsEffect to 0
     for(j_repeat in 1:nBootstrap)
     {
       qsEffect[,j_repeat] 	= Bselection[[j_repeat]][,i_ab];

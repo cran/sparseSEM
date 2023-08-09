@@ -1,26 +1,18 @@
-
 ---
-title: Network Inference via Elastic Net Penalized Structural
-  Equation Models
-author: "Anhui Huang"
-date: "June, 2023"
+title: "Elastic Net Penalized Structural Equation Models"
+author: 
+  - Anhui Huang
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   pdf_document:
     fig_caption: yes
     toc: yes
     toc_depth: 3
-  html_document:
-    toc: yes
-    toc_depth: '3'
-    df_print: paged
-vignette: "%\\VignetteIndexEntry{Yeast GRN Vignette} %\\VignetteEngine{knitr::rmarkdown}
-  %\\usepackage[utf8]{inputenc}    \n"
+vignette: >
+  %\VignetteIndexEntry{Elastic Net Penalized Structural Equation Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}    
 ---
-
-<!-- 
-%\VignetteEngine{knitr::knitr} 
-%\VignetteIndexEntry{Yeast GRN Vignette}
---> 
 
 <a id="top"></a>
 
@@ -32,15 +24,15 @@ vignette: "%\\VignetteIndexEntry{Yeast GRN Vignette} %\\VignetteEngine{knitr::rm
 
 <br>  
 <br>
-This vignette demonstrate the usage of `sparseSEM` package via a simulated network as well as a Gene Regulatory Network (GRN) in budding yeast (Saccharomyces cerevisiae) [1]. 
+This vignette demonstrates the usage of `sparseSEM` package via a simulated network as well as a Gene Regulatory Network (GRN) in budding yeast (Saccharomyces cerevisiae). 
 
 ### simulated network
-The simulated network is relatively small and sparse for demonstration purpose.  A total of 30 nodes with 30 connected edges were simulated following the description in  Huang 2014 [4]:
+The simulated network is relatively small and sparse for demonstration purpose.  A total of 30 nodes with 30 edges were simulated to form a directed acyclic graph (DAG) following the description in  Huang 2014 [1]:
 
 - Number of nodes in the network: $N_{g} = 30$;
 - Number of expected edges $N_{e} = 1$;
 - Edge weight $B_{i j}$ was generated randomly from uniform distribution in $(0.5,1)$ or $(-1,-0.5)$ if there was an edge from node $j$ to node $i$; and
-- Noise $E_{i j}$ was sampled from a Gaussian distribution with zero mean and variance 0.01 
+- Noise $E_{i j}$ was sampled from a Gaussian distribution with zero mean and variance 0.01. 
 
 
 
@@ -52,9 +44,9 @@ The following steps were followed to arrived at the final dataset in `data(yeast
 
 - Step 1. Screen out ORFs not in the Yeast Comparative Genomics database [3], resulting 5225 names of ORFs in annotation list;
 - Step 2. Screen out ORFs with more than $5 \%$ of missing expression data, resulted in 3,380 ORFs;
-- Step 3. Associated gene markers with an ORF if they were in distance $\leq 20 \mathrm{~kb}$ representing the QTL resolution for this cross [1]. 
-- Step 4. Mapping of gene expression levels with their associated gene markers through Wilcoxon rank-sum test with adjusted `q-value` following the procedure described in [1]. 
-- Step 5. Keep 1 gene marker with the smallest $p$-value if multiple cis-eQTLs were found for an ORF, leads to 1,162 ORFs having cis-eQTLs. 
+- Step 3. Associated gene markers with an ORF if they were in distance $\leq 20 \mathrm{~kb}$ representing the QTL resolution for this cross [4]. 
+- Step 4. Mapping of gene expression levels with their associated gene markers through Wilcoxon rank-sum test with adjusted `q-value` following the procedure described in [4]. 
+- Step 5. Keep 1 gene marker with the smallest $p$-value if multiple cis-eQTLs were found for an ORF, which leads to 1,162 ORFs having cis-eQTLs. 
 
 The gene expression profile of 3,380 ORFs and genetic marker of 1,162 eQTLs were then used for network inference by `sparseSEM`.
 
@@ -70,7 +62,7 @@ The gene expression profile of 3,380 ORFs and genetic marker of 1,162 eQTLs were
 
 ## Quick Start
  
-We will give users a general idea of the package by using the simulated example to demonstrates the basis package usage. Through running the main functions and examining the outputs, users may have a better idea on how the package works, what functions are available, which parameters to choose, as well as where to seek help. More details on the GRN are given in later sections.
+We will give users a general idea of the package by using the simulated example to demonstrates the basis package usage. Through running the main functions and examining the outputs, users may have a better idea on how the package works, what functions are available, which parameters to choose, as well as where to seek help. More information on the GRN will be provided in later sections.
 
 Let us first clear up the workspace and load the `sparseSEM` package:
 ```{r}
@@ -80,7 +72,7 @@ library(sparseSEM)
 The simulated network includes matrices of `X`, `Y` , `B`, and `Missing` with 30 rows and 200 columns giving the following measurements: 
 
 - `Y`: The observed node response data with dimension of M (nodes) by N (samples);
-- `X`: The network node attribute (for causal effect inference) with dimension of M (nodes) by N (samples);
+- `X`: The network node attribute (for causal effect inference) with dimension of M by N;
 - `B`: A sparse M by M matrix which contains the actual edges among the network of M nodes.
 - `Missing`: M by N matrix corresponding to elements of Y to denote any missing values.
 
@@ -127,11 +119,11 @@ cvfit = elasticNetSEMcv(Y, X, Missing, B, alpha_factors = c(0.75, 0.5, 0.25),
                       lambda_factors=c(0.1, 0.01, 0.001), kFold = 5, verbose  = 1);
 names(cvfit)
 ```
-`elasticNetSEMcv` returns a `cvfit` object, which is a list with all the ingredients of CV and the final fit results using CV selected hyperparameters. We can view the CV results, selected hyperparameters and the corresponding coefficients. For example, result using different hyperparameters and the corresponding prediction errors are shown below:
+`elasticNetSEMcv` returns a `cvfit` object, which is a list with all the ingredients of CV and the final fit results using CV selected hyperparameters. We can print out the CV results, selected hyperparameters and the corresponding coefficients. For example, result using different hyperparameters and the corresponding prediction errors are shown below:
 ```{r}
 head(cvfit$cv)
 ```
-Note that the values for hyperparameters (alpha, lambda) are `alpha_factor` and `lambda_factor`, which are the weights of the actual (alpha, lambda) and should be in range of [0,1].  I.e., $\alpha = alpha\_factor* \alpha_0$  and  $\lambda = lambda\_factor* \lambda_0$.  Here $\alpha_0 = 1$ as in `elastic net`, $0\leq \alpha \leq 1$. However, $\lambda_0$ is algorithm computed value such that there is one and only one non-zero element in matrix $\hat{\mathbf{B}}$. See Huang (2014) [4] for details on the `lasso` discarding rule for SEM.
+Note that the values for hyperparameters (alpha, lambda) are `alpha_factor` and `lambda_factor`, which are the weights of the actual (alpha, lambda) and should be in range of [0,1].  I.e., $\alpha = alpha\_factor* \alpha_0$  and  $\lambda = lambda\_factor* \lambda_0$.  Here $\alpha_0 = 1$ as in `elastic net`, $0\leq \alpha \leq 1$. However, $\lambda_0$ is algorithm computed value such that there is one and only one non-zero element in matrix $\hat{\mathbf{B}}$. See Huang (2014) [1] for details on the `lasso` discarding rule for SEM.
 
 As shown in the plot below, due to the granular choice of `alpha_factor` and `lambda_factor`, the performance result shows that all 30 edges are captured:
 
@@ -156,6 +148,8 @@ cvfit$fit$statistics
 
 ```
 
+User may also notice that the above two examples only have a few `lambdas` computed than the specified `lambda_factors` parameter (20 `lambdas` by default). This is due to the early stop rule implemented [1], i.e., if current `lambda` leads to Mean Square Error (MSE) larger than that of the previous `lambda` plus 1 Standand Error (STE) unit, then the selection path will not continue. See the selection path and discarding rules for more details [1].
+
 ### Stability Selection (STS)
 With a twist of the hyperparameters, the above plots showed that the non-zero edges can be slightly different. Stability Selection [5,6] is an algorithm to achieve stable effect selection with controlled False Discovery Rate (FDR). The algorithm requires bootstrapping (typically n = 100 rounds), each round randomly selected half of the dataset to run through the lasso/elastic net selection path. Then the stable effects are those consistently selected in different bootstraps measured by the bounded pre-comparison error rate and FDR.
 
@@ -165,11 +159,11 @@ The following code shows the example of running STS:
 tStart = proc.time()
 set.seed(0)
 output = enSEM_stability_selection(Y,X, Missing,B,
-                                     alpha_factors = seq(1,0.1, -0.1), 
-                                     lambda_factors =10^seq(-0.2,-3,-0.2), 
-                                     kFold = 5,
-                                     nBootstrap = 100,
-                                     verbose = -1)
+                                 alpha_factors = seq(1,0.1, -0.1), 
+                                 lambda_factors =10^seq(-0.2,-3,-0.2), 
+                                 kFold = 5,
+                                 nBootstrap = 100,
+                                 verbose = -1)
 tEnd = proc.time()
 simTime = tEnd - tStart;
 print(simTime)
@@ -177,7 +171,7 @@ names(output)
 cat("nSTS = ", length(which(output$STS !=0)))
 ```
 
-One key part of STS method is that, the hyperparameters generally are set toward higher penalty to allow few non-zero edges. This is due to the fact that, if most of the hyperparameters are with small penalty, the number of non-zero edges will be high such that no matter how the threhold (pi) [5, 6] is set, there will be high FDR.
+One key part of STS method is that, the hyperparameters generally are set toward higher penalty to allow few non-zero edges. This is due to the fact that, if most of the hyperparameters are with small penalty, the number of non-zero edges will be large such that no matter how the threhold (pi) [5, 6] is set, there will be large number of false positives.
 
 The above example shows that we set the values of lambda_factors to not too small, and all true effects are captured with no false positives as shown below:
 
@@ -188,19 +182,19 @@ plot(B)
 plot(output$STS)
 ```
 
-Parallel bootstrapping is also implemented with R package `parallel`:
+Note that STS output a binary 0 or 1 $B_{i j}$ indicating if there was an edge from node $j$ to node $i$. Parallel bootstrapping is also implemented with R package `parallel`:
 
 ```{r, eval=FALSE}
 library(parallel)
 cl<-makeCluster(4,type="SOCK")
 clusterEvalQ(cl,{library(sparseSEM)})
 output = enSEM_stability_selection_parallel(Y,X, Missing,B,
-                                          alpha_factors = seq(1,0.1, -0.1), 
-                                          lambda_factors =10^seq(-0.2,-3,-0.2), 
-                                          kFold = 3,
-                                          nBootstrap = 100,
-                                          verbose = -1,
-                                          clusters = cl)
+                                      alpha_factors = seq(1,0.1, -0.1), 
+                                      lambda_factors =10^seq(-0.2,-3,-0.2), 
+                                      kFold = 3,
+                                      nBootstrap = 100,
+                                      verbose = -1,
+                                      clusters = cl)
 stopCluster(cl)	
 ```
 
@@ -233,13 +227,15 @@ For even larger network, a parallel computation version of `sparseSEM` is also a
 
 
 ## References
-1. Brem RB, Kruglyak L: The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences of the United States of America 2005, 102:1572-1577
+1. Huang, A. (2014). "Sparse model learning for inferring genotype and phenotype associations." Ph.D Dissertation Chapter 7. University of Miami(1186). 
+
+
 
 2. Brem RB, Yvert $\mathrm{G}$, Clinton R, Kruglyak L: Genetic dissection of transcriptional regulation in budding yeast. Science 2002 296:752-755
 
 3. Kellis M, Patterson N, Endrizzi M, Birren B, Lander ES: Sequencing and comparison of yeast species to identify genes and regulatory elements. Nature $2003, \mathbf{4 2 3}: 241-254$
 
-4.  Huang, A. (2014). "Sparse model learning for inferring genotype and phenotype associations." Ph.D Dissertation Chapter 7. University of Miami(1186). 
+4. Brem RB, Kruglyak L: The landscape of genetic complexity across 5,700 gene expression traits in yeast. Proceedings of the National Academy of Sciences of the United States of America 2005, 102:1572-1577
 
 5. Meinshausen, N. and Buhlmann, P., 2010. Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 72(4), pp.417-473.
 

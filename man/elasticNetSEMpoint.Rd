@@ -9,7 +9,7 @@
 	the function perform selection path from lambda_max to lambda 
 	to determine the optimal network topology. 
 	
-	In the case of the grid search in elasticNetSMLcv() function may not 
+	In the case of the grid search in elasticNetSEMcv() function may not 
 	be granular enough and user would like to explore/twist (alpha, lambda)
 	a little bit, this function provides the solution.
 	
@@ -90,8 +90,8 @@
 \author{Anhui Huang; Dept of Electrical and Computer Engineering, Univ of Miami, Coral Gables, FL}
 \note{
 		Difference in three functions:\cr
-		1) elasticNetSML: Default alpha = 0.95: -0.05: 0.05; default 20 lambdas \cr
-		2) elasticNetSMLcv: user supplied alphas (one or more), lambdas; compute the optimal parameters and network parameters \cr
+		1) elasticNetSEM: Default alpha = 0.95: -0.05: 0.05; default 20 lambdas \cr
+		2) elasticNetSEMcv: user supplied alphas (one or more), lambdas; compute the optimal parameters and network parameters \cr
 		3) elasticNetSEMpoint: user supplied one alpha and one lambda, compute the network parameters 
 		
 }

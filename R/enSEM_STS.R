@@ -48,9 +48,10 @@ enSEM_STS <- function(i=0,
   genoX = X
   Y 					= exprY[,keepSample];
   X 					= genoX[,keepSample];
+  Missing     = Missing[,keepSample]
   N 					= ncol(Y);	
-  Missing 			= matrix(0,N,M);
-  B 					= matrix(0,N,M);
+  #Missing 			= matrix(0,N,M);
+  #B 					= matrix(0,N,M);
   tStart 				= proc.time();
   output<-.C("mainSML_adaENstabilitySelection",
              Y 		= as.double(Y),

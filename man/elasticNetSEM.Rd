@@ -2,7 +2,7 @@
 \alias{elasticNetSEM}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-	The Elastic Net penalty for SEM
+	The Elastic Net penalized SEM with Network GPT Framework
 }
 \description{
 	Fit the elastic-net penalized structureal Equation Models (SEM) with input data (X, Y): Y = BY + fX + e.
@@ -17,17 +17,19 @@
 	to determine the optimal (alpha, lambda) for the data. 
 	
         
-	 Generally, the software program follows the following steps to arrive at final network structure: \cr
-        Step 1. SEM-ridge regression (L2 penalty) with k-fold CV: this step find the optimal ridge hyperparameter rho; \cr
+	 Generally, the software program performs the following Network GPT Framework to arrive at final network structure: \cr
+        Step 1. Generating a Complete Graph:
         
-        Step 2. fit SEM reidge regression model (L2 penalty) with rho from Step 1, obtain the initial status (non-sparse)
+        - SEM-ridge regression (L2 penalty) with k-fold CV: this step find the optimal ridge hyperparameter rho; \cr
+        
+        - fit SEM ridge regression model (L2 penalty) with rho from Step 1, obtain the initial status (non-sparse)
                 of network structure (B_ridge); \cr
                 
-        Step 3.SEM-elastic-net regression with k-fold CV: this step finds the optimal hyperparameter (alpha, lambda); \cr
+        Step 2. Elastic net penalized SEM regression with k-fold CV: this step finds the optimal hyperparameter (alpha, lambda); \cr
         
-        Step 4. fit SEM-elastic-net model with (alpha, lambda) from Step 3; \cr
+        Step 3. Fit elastic net SEM model with (alpha, lambda) from Step 2; This step applies a block cooridnate ascent algorithm, and the complete graph from Step-1 is used as the intial step;  \cr
         
-        Step 5. calculate results for PD, FDR, provide the function output.
+        Step 4. Calculate results for PD, FDR, provide the function output.
         
   
   For large scale network inference, a standalone C/C++ software with openMPI for 

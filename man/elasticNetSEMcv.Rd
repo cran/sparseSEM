@@ -2,11 +2,11 @@
 \alias{elasticNetSEMcv}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-	The Elastic Net penalty for SEM with user supplied alphas and lambdas
+	The Elastic Net penalty for SEM with user supplied (alphas, lambdas) for grid search
 }
 \description{
 Function elasticNetSEMcv allows users to set their own grid search through combination of a set of user provided
-	alpha an lambda.
+	alphas an lambdas.
  }
 \usage{
 elasticNetSEMcv(Y, X, Missing, B, alpha_factors,lambda_factors,kFold, verbose)
