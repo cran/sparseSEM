@@ -31,14 +31,14 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 	int MN = M*N;
 	double *Q, *BL, *fL,*mueL; 
 	int i,j,index;	
-	Q = (double* ) Calloc(MM, double); //ptr Q
-	BL = (double* ) Calloc(MM, double); //ptr BL
-	fL = (double* ) Calloc(M, double); //ptr fL
-	mueL = (double* ) Calloc(M, double);
+	Q = (double* ) R_Calloc(MM, double); //ptr Q
+	BL = (double* ) R_Calloc(MM, double); //ptr BL
+	fL = (double* ) R_Calloc(M, double); //ptr fL
+	mueL = (double* ) R_Calloc(M, double);
 	//
 	double *BC, *fC;
-	BC = (double* ) Calloc(MM, double);
-	fC = (double* ) Calloc(M, double);
+	BC = (double* ) R_Calloc(MM, double);
+	fC = (double* ) R_Calloc(M, double);
 	
 	int Ntest = N/Kcv; 		//C takes floor
 	int Nlearn = N - Ntest; 
@@ -52,27 +52,27 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 		i= Nlambdas*Kcv;
 	}
 	
-	Errs = (double* ) Calloc(i, double);
-	Sigmas2 = (double* ) Calloc(Nlambdas, double);
-	ErrorMean= (double* ) Calloc(Nlambdas, double);
+	Errs = (double* ) R_Calloc(i, double);
+	Sigmas2 = (double* ) R_Calloc(Nlambdas, double);
+	ErrorMean= (double* ) R_Calloc(Nlambdas, double);
 	i = Nlambdas*Kcv;
-	ErrorCV = (double* ) Calloc(i, double);
+	ErrorCV = (double* ) R_Calloc(i, double);
 	
 	//parameters inside the loop
 	double *Ylearn, *Xlearn, *Ytest,*Xtest;
 	int NlearnM = Nlearn*M;
 	int NtestM = Ntest*M;
-	Ylearn = (double* ) Calloc(NlearnM, double);
-	Xlearn = (double* ) Calloc(NlearnM, double);
-	Ytest = (double* ) Calloc(NtestM, double);
-	Xtest = (double* ) Calloc(NtestM, double);
+	Ylearn = (double* ) R_Calloc(NlearnM, double);
+	Xlearn = (double* ) R_Calloc(NlearnM, double);
+	Ytest = (double* ) R_Calloc(NtestM, double);
+	Xtest = (double* ) R_Calloc(NtestM, double);
 
 	//centerYX function
 	double *Ylearn_centered, *Xlearn_centered, *meanY, *meanX;
-	Ylearn_centered = (double* ) Calloc(NlearnM, double);
-	Xlearn_centered = (double* ) Calloc(NlearnM, double);
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
+	Ylearn_centered = (double* ) R_Calloc(NlearnM, double);
+	Xlearn_centered = (double* ) R_Calloc(NlearnM, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
 	
 
 	//main loop
@@ -90,7 +90,7 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 
 	//SL
 	double *SL;				//zero or not-zero
-	SL = (double* ) Calloc(MM, double);
+	SL = (double* ) R_Calloc(MM, double);
 
 	//convergence 
 	
@@ -117,10 +117,10 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 	
 
 	double *testNoise,*ImB,*NOISE;
-	NOISE =(double* ) Calloc(MN, double);
+	NOISE =(double* ) R_Calloc(MN, double);
 
 	testNoise = &NOISE[0];
-	ImB = (double* ) Calloc(MM, double);
+	ImB = (double* ) R_Calloc(MM, double);
 	char transa = 'N'; 
 	char transb = 'N';
 	lda = M;
@@ -271,9 +271,9 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 	double *IBinv,*IBinvZero,*lambda_Max;
 	double *IBinvPath,*IBinvPathZero;
 	irho  = MM*Kcv;
-	IBinvPath = (double* ) Calloc(irho, double);
-	IBinvPathZero = (double* ) Calloc(irho, double);
-	lambda_Max = (double* ) Calloc(Kcv, double);
+	IBinvPath = (double* ) R_Calloc(irho, double);
+	IBinvPathZero = (double* ) R_Calloc(irho, double);
+	lambda_Max = (double* ) R_Calloc(Kcv, double);
 	double lambda_max_cv;
 	beta = 0;
 	//initialized
@@ -452,7 +452,7 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 	}
 	
 	double *errorMeanCpy;
-	errorMeanCpy = (double* ) Calloc(Nlambdas, double);
+	errorMeanCpy = (double* ) R_Calloc(Nlambdas, double);
 
 	double minimumErr = -1e5 - MN;
 	F77_CALL(dcopy)(&Nlambdas,&minimumErr,&inc0,errorMeanCpy,&inci);
@@ -466,40 +466,40 @@ int cv_gene_nets_support_Rdg(double *Y, double *X, int Kcv,double *lambda_factor
 	//return index of lambda_factors
 	if(verbose>1) Rprintf("\t\tExit Function: cv_support. optimal lambda index: %d.\n\n", ilambda_ms);
 
-	Free(NOISE);
-	Free(ImB);
+	R_Free(NOISE);
+	R_Free(ImB);
 	
 	
-	Free(Q);
-	Free(BL);
-	Free(fL);
-	Free(mueL);
-	Free(BC);
-	Free(fC);
+	R_Free(Q);
+	R_Free(BL);
+	R_Free(fL);
+	R_Free(mueL);
+	R_Free(BC);
+	R_Free(fC);
 	
-	Free(Errs);
-	Free(Sigmas2);
-	Free(ErrorMean);
-	Free(ErrorCV);
-	Free(errorMeanCpy);
+	R_Free(Errs);
+	R_Free(Sigmas2);
+	R_Free(ErrorMean);
+	R_Free(ErrorCV);
+	R_Free(errorMeanCpy);
 	
-	Free(Ylearn);
-	Free(Xlearn);
-	Free(Ytest);
-	Free(Xtest);	
+	R_Free(Ylearn);
+	R_Free(Xlearn);
+	R_Free(Ytest);
+	R_Free(Xtest);	
 
 
-	Free(Ylearn_centered);
-	Free(Xlearn_centered);	
-	Free(meanY);
-	Free(meanX);
-	Free(SL);
+	R_Free(Ylearn_centered);
+	R_Free(Xlearn_centered);	
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(SL);
 
 
-	Free(IBinvPath);
-	Free(IBinvPathZero);
+	R_Free(IBinvPath);
+	R_Free(IBinvPathZero);
 	
-	Free(lambda_Max);
+	R_Free(lambda_Max);
 	
 	return ilambda_ms;
 	
@@ -521,7 +521,7 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 	int MN 		= M*N;
 	int MM 		= M*M;
 	double *Strue;
-	Strue 		= (double* ) Calloc(MM, double);
+	Strue 		= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,B,&inci,Strue,&incj);
 	stat[1] 	= 0;
 	for(i=0;i<M;i++)
@@ -549,7 +549,7 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 	int Kcv 		= 5;
 	int L_lambda 	= 20; // number of lambdas in lambda_factors	stop at 0.001
 	double *lambda_factors;
-	lambda_factors 	= (double* ) Calloc(L_lambda, double);
+	lambda_factors 	= (double* ) R_Calloc(L_lambda, double);
 	double step 	= -0.2;
 	for(i=0;i<L_lambda;i++) 
 	{
@@ -561,7 +561,7 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 	step 					= -6;
 	double * rho_factors;
 	int L 					= 31; // number of rho_factors
-	rho_factors 			= (double* ) Calloc(L, double);
+	rho_factors 			= (double* ) R_Calloc(L, double);
 	for(i=0;i<L;i++) 
 	{
 		rho_factors[i] 		= pow(10.0,step);
@@ -575,10 +575,10 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 //call ridge_cvf
 	double sigma2; //return value;
 	double *W;  //weight on diagonal?
-	W = (double* ) Calloc(MM, double);
+	W = (double* ) R_Calloc(MM, double);
 
 	double *QIBinv;
-	QIBinv = (double* ) Calloc(MM, double);
+	QIBinv = (double* ) R_Calloc(MM, double);
 	double beta = 0;
 	F77_CALL(dcopy)(&MM,&beta,&inc0,QIBinv,&incj);
 	for(i=0;i<M;i++) QIBinv[i*M+i] =1;
@@ -594,10 +594,10 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 	
 	//call centerYX;
 	double *meanY, *meanX, *Ycopy, *Xcopy;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	Ycopy = (double* ) Calloc(MN, double);
-	Xcopy = (double* ) Calloc(MN, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
+	Ycopy = (double* ) R_Calloc(MN, double);
+	Xcopy = (double* ) R_Calloc(MN, double);
 	
 	
 	//copy Y,X
@@ -607,7 +607,7 @@ void mainSML(double *Y, double *X, int *m, int *n, int *Missing,double*B, double
 	centerYX(Ycopy,Xcopy, meanY, meanX,M, N);
 	// call Q_start
 	double *Q;
-	Q = (double* ) Calloc(MM, double);
+	Q = (double* ) R_Calloc(MM, double);
 	QlambdaStart(Ycopy,Xcopy, Q, sigma2, M, N);
 	
 	//selection path
@@ -660,17 +660,17 @@ if(verbose>0) Rprintf("\tlambda: %f\n", lambda);
 	stat[4] = stat[0]/stat[1];
 	stat[5] = stat[2]/stat[3];
 	if(verbose==0) Rprintf("Step 5: Finish calculation; detection power in stat vector.\n");
-	Free(Strue);
-	Free(meanY);
-	Free(meanX);
-	Free(lambda_factors);
-	Free(rho_factors);
-	Free(Ycopy);
-	Free(Xcopy);
+	R_Free(Strue);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(lambda_factors);
+	R_Free(rho_factors);
+	R_Free(Ycopy);
+	R_Free(Xcopy);
 
-	Free(W);
-	Free(QIBinv);
-	Free(Q);
+	R_Free(W);
+	R_Free(QIBinv);
+	R_Free(Q);
 }
 
 
@@ -678,9 +678,9 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 {	
 	double *dxx, *rxy, *DxxRxy,*readPtr1,*readPtr2;
 	double lambda_max = 0;		
-	dxx				= (double* ) Calloc(M, double);
-	rxy				= (double* ) Calloc(M, double);
-	DxxRxy			= (double* ) Calloc(M, double);
+	dxx				= (double* ) R_Calloc(M, double);
+	rxy				= (double* ) R_Calloc(M, double);
+	DxxRxy			= (double* ) R_Calloc(M, double);
 	int i,k,index,lda;
 	int inci = 1;
 	int incj = 1; 
@@ -689,7 +689,7 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 	int MM = M*M;
 	//------adaEN 	
 	double *W;
-	W 				= (double* ) Calloc(MM, double);
+	W 				= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,Wori,&inci,W,&incj);
 	F77_CALL(dscal)(&MM,&alpha_factor,W,&inci); 
 	
@@ -706,7 +706,7 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 
 	double * XDxxRxy;
 
-	XDxxRxy = (double* ) Calloc(MN, double);
+	XDxxRxy = (double* ) R_Calloc(MN, double);
 
 	F77_CALL(dcopy)(&MN,X,&inci,XDxxRxy,&incj);
 	double alpha;	
@@ -724,7 +724,7 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 
 	double *YYXDR; //= Y*XDxxRxy'
 
-	YYXDR = (double* ) Calloc(MM, double);	
+	YYXDR = (double* ) R_Calloc(MM, double);	
 
 	double beta;
 	char transa = 'N';
@@ -752,14 +752,14 @@ double lambdaMax_adaEN(double *Y,double *X,double * Wori,int M, int N,double alp
 
 	lambda_max = fabs(YYXDR[index-1]);
 
-	Free(dxx);
-	Free(rxy);
-	Free(DxxRxy);
+	R_Free(dxx);
+	R_Free(rxy);
+	R_Free(DxxRxy);
 
-	Free(XDxxRxy);
-	Free(YYXDR);
+	R_Free(XDxxRxy);
+	R_Free(YYXDR);
 	//------adaEN 
-	Free(W);
+	R_Free(W);
 
 	return lambda_max;	
 }
@@ -775,15 +775,15 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 
 	ldM = M;//fixed
 	double *meanY, *meanX;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
 	
 	//copy Y, X; 
 	double *Y, *X;
 	int MN = M*N;
 	int MM = M*M;
-	Y = (double* ) Calloc(MN, double);
-	X = (double* ) Calloc(MN, double);
+	Y = (double* ) R_Calloc(MN, double);
+	X = (double* ) R_Calloc(MN, double);
 
 	int inci,incj, inc0;
 	inci	= 1;
@@ -804,13 +804,13 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 	double deltaLambda;
 
 	double *s, *S,*Wcopy, *W;
-	S = (double* ) Calloc(MM, double);
-	s = (double* ) Calloc(M, double);
-	W 						= (double* ) Calloc(MM, double);
+	S = (double* ) R_Calloc(MM, double);
+	s = (double* ) R_Calloc(M, double);
+	W 						= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,Wori,&inci,W,&incj);
 	F77_CALL(dscal)(&MM,&alpha_factor,W,&inci); 
 //------adaEN
-	Wcopy = (double* ) Calloc(MM, double);
+	Wcopy = (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,W,&inci,Wcopy,&incj);
 
 	deltaLambda 			= (2*lambda_factor - lambda_factor_prev)*lambda_max;	
@@ -819,7 +819,7 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 	//ei = 0
 	double *ei,toyZero;
 	toyZero= 0;
-	ei = (double* ) Calloc(M, double);
+	ei = (double* ) R_Calloc(M, double);
 
 	F77_CALL(dcopy)(&M,&toyZero,&inc0,ei,&inci);
 
@@ -847,11 +847,11 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 	char transa = 'N'; 
 
 	double *f0,*F1;
-	f0 	= (double* ) Calloc(M, double);
-	F1 	= (double* ) Calloc(MM, double);
+	f0 	= (double* ) R_Calloc(M, double);
+	F1 	= (double* ) R_Calloc(MM, double);
 	
 	double *y_j;
-	y_j 	= (double* ) Calloc(N, double);
+	y_j 	= (double* ) R_Calloc(N, double);
 	double *F1ptr;
 
 
@@ -872,16 +872,16 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 	}
 
 	double *IBinv,*zi,*a_iT;		// y_j: one row of Y: Nx1
-	IBinv 	= (double* ) Calloc(MM, double);
-	a_iT 	= (double* ) Calloc(N, double);
+	IBinv 	= (double* ) R_Calloc(MM, double);
+	a_iT 	= (double* ) R_Calloc(N, double);
 
 	//loop starts here
 	int iter = 0;
 	double js_i, m_ij,B_old, lambdaW,beta_ij,r_ij, Bij;
 	double *eiB;
-	eiB = (double* ) Calloc(M, double);
+	eiB = (double* ) R_Calloc(M, double);
 	double *BiT;
-	BiT = (double* ) Calloc(M, double);
+	BiT = (double* ) R_Calloc(M, double);
 	//quadratic function
 	double d_ij, theta_ijp,k_ijp,q_ijp,Bijpp, Bijpm; //case (14)
 	double q_ijm, theta_ijm, Bijmm, Bijmp,Lss,candsBij,LssCands;
@@ -891,9 +891,9 @@ double Weighted_LassoSf_adaEN(double * Wori, double *B, double *f, double *Ycopy
 	double delta_BF,FnormOld, FnormChange;
 	double *BfOld,*BfNew,*BfChange;
 	index = M*(M  +1);
-	BfOld = (double* ) Calloc(index, double);
-	BfNew = (double* ) Calloc(index, double);
-	BfChange = (double* ) Calloc(index, double);
+	BfOld = (double* ) R_Calloc(index, double);
+	BfNew = (double* ) R_Calloc(index, double);
+	BfChange = (double* ) R_Calloc(index, double);
 	
 	
 	while(iter < max_iter)
@@ -1090,33 +1090,33 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 	
 	if(verbose>4) Rprintf("\t\t\t\tCurrent lambda: %f;\t number of iteration is: %d.\tExiting Weighted_LassoSf\n\n",lambda, iter);
 
-	Free(meanY);
-	Free(meanX);
-	Free(Y);
-	Free(X);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(Y);
+	R_Free(X);
 	
-	Free(S);
-	Free(s);
-	Free(f0);
-	Free(F1);
-	Free(Wcopy);
+	R_Free(S);
+	R_Free(s);
+	R_Free(f0);
+	R_Free(F1);
+	R_Free(Wcopy);
 	
-	//Free(xi);
-	Free(y_j);
+	//R_Free(xi);
+	R_Free(y_j);
 	
-	Free(ei);
-	Free(IBinv);
-	//Free(zi);
-	Free(a_iT);
+	R_Free(ei);
+	R_Free(IBinv);
+	//R_Free(zi);
+	R_Free(a_iT);
 	
-	Free(eiB);
-	Free(BiT);
-	Free(BfOld);
-	Free(BfNew);
-	Free(BfChange);
+	R_Free(eiB);
+	R_Free(BiT);
+	R_Free(BfOld);
+	R_Free(BfNew);
+	R_Free(BfChange);
 	
 	//------adaEN 
-	Free(W);
+	R_Free(W);
 	return lambda;
 }//weighted_LassoSf
 
@@ -1135,15 +1135,15 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 
 	ldM = M;//fixed
 	double *meanY, *meanX;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
 	
 	//copy Y, X; 
 	double *Y, *X;
 	int MN = M*N;
 	int MM = M*M;
-	Y = (double* ) Calloc(MN, double);
-	X = (double* ) Calloc(MN, double);
+	Y = (double* ) R_Calloc(MN, double);
+	X = (double* ) R_Calloc(MN, double);
 	
 	int inci,incj,inc0;
 	inci	= 1;
@@ -1165,13 +1165,13 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	
 //------adaEN
 	double *s, *S,*Wcopy,*W; //global copy of W
-	S = (double* ) Calloc(MM, double);
-	s = (double* ) Calloc(M, double);
-	W = (double* ) Calloc(MM, double);
+	S = (double* ) R_Calloc(MM, double);
+	s = (double* ) R_Calloc(M, double);
+	W = (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,Wori,&inci,W,&incj);
 	F77_CALL(dscal)(&MM,&alpha_factor,W,&inci); //MAKE sure alpha_factor is bcasted
 
-	Wcopy = (double* ) Calloc(MM, double);
+	Wcopy = (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,W,&inci,Wcopy,&incj);
 
 	deltaLambda 			= (2*lambda_factor - lambda_factor_prev)*lambda_max;	
@@ -1180,7 +1180,7 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	//ei = 0
 	double *ei,toyZero;
 	toyZero= 0;
-	ei = (double* ) Calloc(M, double);
+	ei = (double* ) R_Calloc(M, double);
 
 	F77_CALL(dcopy)(&M,&toyZero,&inc0,ei,&inci);
 
@@ -1208,11 +1208,11 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	char transa = 'N'; 
 
 	double *f0,*F1;
-	f0 	= (double* ) Calloc(M, double);
-	F1 	= (double* ) Calloc(MM, double);
+	f0 	= (double* ) R_Calloc(M, double);
+	F1 	= (double* ) R_Calloc(MM, double);
 
 	double *y_j;
-	y_j 	= (double* ) Calloc(N, double);
+	y_j 	= (double* ) R_Calloc(N, double);
 	double *F1ptr;
 
 
@@ -1234,8 +1234,8 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	}
 	
 	double *IBinv,*zi,*a_iT;// y_j: one row of Y: Nx1
-	IBinv 	= (double* ) Calloc(MM, double);
-	a_iT 	= (double* ) Calloc(N, double);
+	IBinv 	= (double* ) R_Calloc(MM, double);
+	a_iT 	= (double* ) R_Calloc(N, double);
 
 	
 	
@@ -1243,9 +1243,9 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	int iter = 0;
 	double js_i, m_ij,B_old, lambdaW,beta_ij,r_ij, Bij;
 	double *eiB;
-	eiB = (double* ) Calloc(M, double);
+	eiB = (double* ) R_Calloc(M, double);
 	double *BiT;
-	BiT = (double* ) Calloc(M, double);
+	BiT = (double* ) R_Calloc(M, double);
 	//quadratic function
 	double d_ij, theta_ijp,k_ijp,q_ijp,Bijpp, Bijpm; //case (14)
 	double q_ijm, theta_ijm, Bijmm, Bijmp,Lss,candsBij,LssCands;
@@ -1257,9 +1257,9 @@ double Weighted_LassoSf_MLf_adaEN(double * Wori, double *BL, double *fL, double 
 	double delta_BF,FnormOld, FnormChange;
 	double *BfOld,*BfNew,*BfChange;
 	index = M*(M  +1);
-	BfOld = (double* ) Calloc(index, double);
-	BfNew = (double* ) Calloc(index, double);
-	BfChange = (double* ) Calloc(index, double);
+	BfOld = (double* ) R_Calloc(index, double);
+	BfNew = (double* ) R_Calloc(index, double);
+	BfChange = (double* ) R_Calloc(index, double);
 	
 	while(iter < max_iter)
 	{
@@ -1648,33 +1648,33 @@ r_ij = r_ij + (1 -alpha_factor)*lambda;
 	
 	//----------------------------------------------------------------------------------END OF LASSO_ZERO
 
-	Free(meanY);
-	Free(meanX);
-	Free(Y);
-	Free(X);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(Y);
+	R_Free(X);
 	
-	Free(S);
-	Free(s);
-	Free(f0);
-	Free(F1);
-	Free(Wcopy);
+	R_Free(S);
+	R_Free(s);
+	R_Free(f0);
+	R_Free(F1);
+	R_Free(Wcopy);
 
-	Free(y_j);
+	R_Free(y_j);
 	
-	Free(ei);
-	Free(IBinv);
-	//Free(zzi);
-	Free(a_iT);
+	R_Free(ei);
+	R_Free(IBinv);
+	//R_Free(zzi);
+	R_Free(a_iT);
 	
-	Free(eiB);
-	Free(BiT);
-	Free(BfOld);
-	Free(BfNew);
-	Free(BfChange);
+	R_Free(eiB);
+	R_Free(BiT);
+	R_Free(BfOld);
+	R_Free(BfNew);
+	R_Free(BfChange);
 	
-	//Free(ipiv);
+	//R_Free(ipiv);
 	//------adaEN
-	Free(W);
+	R_Free(W);
 
 	return lambda;
 }//weighted_LassoSf
@@ -1691,14 +1691,14 @@ int cv_gene_nets_support_adaEN(double *Y, double *X, int Kcv,double *lambda_fact
 	// to save for each lambda
 	double *Q, *BL, *fL,*mueL; 
 	int i,j,index;	
-	Q = (double* ) Calloc(MM, double); //ptr Q
-	BL = (double* ) Calloc(MM, double); //ptr BL
-	fL = (double* ) Calloc(M, double); //ptr fL
-	mueL = (double* ) Calloc(M, double);
+	Q = (double* ) R_Calloc(MM, double); //ptr Q
+	BL = (double* ) R_Calloc(MM, double); //ptr BL
+	fL = (double* ) R_Calloc(M, double); //ptr fL
+	mueL = (double* ) R_Calloc(M, double);
 	//
 	double *BC, *fC;
-	BC = (double* ) Calloc(MM, double);
-	fC = (double* ) Calloc(M, double);
+	BC = (double* ) R_Calloc(MM, double);
+	fC = (double* ) R_Calloc(M, double);
 	
 	int Ntest = N/Kcv; 		//C takes floor
 	int Nlearn = N - Ntest; 
@@ -1712,27 +1712,27 @@ int cv_gene_nets_support_adaEN(double *Y, double *X, int Kcv,double *lambda_fact
 		i= Nlambdas*Kcv;
 	}
 	
-	Errs = (double* ) Calloc(i, double);
-	Sigmas2 = (double* ) Calloc(Nlambdas, double);
-	ErrorMean= (double* ) Calloc(Nlambdas, double);
+	Errs = (double* ) R_Calloc(i, double);
+	Sigmas2 = (double* ) R_Calloc(Nlambdas, double);
+	ErrorMean= (double* ) R_Calloc(Nlambdas, double);
 	i = Nlambdas*Kcv;
-	ErrorCV = (double* ) Calloc(i, double);
+	ErrorCV = (double* ) R_Calloc(i, double);
 	
 	//parameters inside the loop
 	double *Ylearn, *Xlearn, *Ytest,*Xtest;
 	int NlearnM = Nlearn*M;
 	int NtestM = Ntest*M;
-	Ylearn = (double* ) Calloc(NlearnM, double);
-	Xlearn = (double* ) Calloc(NlearnM, double);
-	Ytest = (double* ) Calloc(NtestM, double);
-	Xtest = (double* ) Calloc(NtestM, double);
+	Ylearn = (double* ) R_Calloc(NlearnM, double);
+	Xlearn = (double* ) R_Calloc(NlearnM, double);
+	Ytest = (double* ) R_Calloc(NtestM, double);
+	Xtest = (double* ) R_Calloc(NtestM, double);
 
 	//centerYX function
 	double *Ylearn_centered, *Xlearn_centered, *meanY, *meanX;
-	Ylearn_centered = (double* ) Calloc(NlearnM, double);
-	Xlearn_centered = (double* ) Calloc(NlearnM, double);
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
+	Ylearn_centered = (double* ) R_Calloc(NlearnM, double);
+	Xlearn_centered = (double* ) R_Calloc(NlearnM, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
 	
 
 	//main loop
@@ -1749,7 +1749,7 @@ int cv_gene_nets_support_adaEN(double *Y, double *X, int Kcv,double *lambda_fact
 	lambda_factor_prev = 1;
 
 	double *SL;				//zero or not-zero
-	SL = (double* ) Calloc(MM, double);
+	SL = (double* ) R_Calloc(MM, double);
 
 	//convergence
 	//------adaEN 
@@ -1775,9 +1775,9 @@ int cv_gene_nets_support_adaEN(double *Y, double *X, int Kcv,double *lambda_fact
 	mueR= &mueL[0];//BORROWED; no return: reset in lambda CV
 	
 	double *testNoise,*ImB,*NOISE;
-	NOISE =(double* ) Calloc(MN, double);
+	NOISE =(double* ) R_Calloc(MN, double);
 	testNoise = &NOISE[0];
-	ImB = (double* ) Calloc(MM, double);
+	ImB = (double* ) R_Calloc(MM, double);
 	char transa = 'N'; 
 	char transb = 'N';
 	lda = M;
@@ -1931,9 +1931,9 @@ if(i_alpha ==0)
 	double *IBinv,*IBinvZero,*lambda_Max;
 	double *IBinvPath,*IBinvPathZero;
 	irho  = MM*Kcv;
-	IBinvPath = (double* ) Calloc(irho, double);
-	IBinvPathZero = (double* ) Calloc(irho, double);
-	lambda_Max = (double* ) Calloc(Kcv, double);
+	IBinvPath = (double* ) R_Calloc(irho, double);
+	IBinvPathZero = (double* ) R_Calloc(irho, double);
+	lambda_Max = (double* ) R_Calloc(Kcv, double);
 	double lambda_max_cv;
 	beta = 0;
 	//initialized
@@ -2090,7 +2090,7 @@ if(i_alpha ==0)
 		ilambda = ilambda + 1; 
 	}
 	double *errorMeanCpy;
-	errorMeanCpy = (double* ) Calloc(Nlambdas, double);
+	errorMeanCpy = (double* ) R_Calloc(Nlambdas, double);
 	//int inc0  = 0;
 	double minimumErr = -1e5 - MN;
 	F77_CALL(dcopy)(&Nlambdas,&minimumErr,&inc0,errorMeanCpy,&inci);
@@ -2130,37 +2130,37 @@ if(i_alpha ==0)
 
 	if(verbose>1) Rprintf("\t\tExit Function: cv_support. optimal lambda index: %d.\n\n", ilambda_ms);
 
-	Free(NOISE);
-	Free(ImB);
+	R_Free(NOISE);
+	R_Free(ImB);
 	
 	
-	Free(Q);
-	Free(BL);
-	Free(fL);
-	Free(mueL);
-	Free(BC);
-	Free(fC);
+	R_Free(Q);
+	R_Free(BL);
+	R_Free(fL);
+	R_Free(mueL);
+	R_Free(BC);
+	R_Free(fC);
 	
-	Free(Errs);
-	Free(Sigmas2);
-	Free(ErrorMean);
-	Free(ErrorCV);
-	Free(errorMeanCpy);
+	R_Free(Errs);
+	R_Free(Sigmas2);
+	R_Free(ErrorMean);
+	R_Free(ErrorCV);
+	R_Free(errorMeanCpy);
 	
-	Free(Ylearn);
-	Free(Xlearn);
-	Free(Ytest);
-	Free(Xtest);	
+	R_Free(Ylearn);
+	R_Free(Xlearn);
+	R_Free(Ytest);
+	R_Free(Xtest);	
 
-	Free(Ylearn_centered);
-	Free(Xlearn_centered);	
-	Free(meanY);
-	Free(meanX);
-	Free(SL);
-	Free(IBinvPath);
-	Free(IBinvPathZero);
+	R_Free(Ylearn_centered);
+	R_Free(Xlearn_centered);	
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(SL);
+	R_Free(IBinvPath);
+	R_Free(IBinvPathZero);
 	
-	Free(lambda_Max);
+	R_Free(lambda_Max);
 	
 	return ilambda_ms;
 
@@ -2183,7 +2183,7 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	int MN 		= M*N;
 	int MM 		= M*M;
 	double *Strue;
-	Strue 		= (double* ) Calloc(MM, double);
+	Strue 		= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,B,&inci,Strue,&incj);
 	stat[1] 	= 0;
 	for(i=0;i<M;i++)
@@ -2211,7 +2211,7 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	int Kcv 		= 5;
 	int L_lambda 	= 20; // number of lambdas in lambda_factors	stop at 0.001
 	double *lambda_factors;
-	lambda_factors 	= (double* ) Calloc(L_lambda, double);
+	lambda_factors 	= (double* ) R_Calloc(L_lambda, double);
 	double step 	= -0.2;
 	for(i=0;i<L_lambda;i++) 
 	{
@@ -2222,7 +2222,7 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	step 					= -6;
 	double * rho_factors;
 	int L 					= 31; // number of rho_factors
-	rho_factors 			= (double* ) Calloc(L, double);
+	rho_factors 			= (double* ) R_Calloc(L, double);
 	for(i=0;i<L;i++) 
 	{
 		rho_factors[i] 		= pow(10.0,step);
@@ -2231,13 +2231,13 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	//------adaEN
 	double *alpha_factors, *ErrorEN,*lambdaEN, sigma2learnt;
 	int L_alpha  		= 19; 
-	alpha_factors 		= (double* ) Calloc(L_alpha, double); //variable in all ranks
-	ErrorEN 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	lambdaEN 			= (double* ) Calloc(L_alpha, double);
+	alpha_factors 		= (double* ) R_Calloc(L_alpha, double); //variable in all ranks
+	ErrorEN 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	lambdaEN 			= (double* ) R_Calloc(L_alpha, double);
 
 	double *ErrorEN_min, *steEN_min;
-	ErrorEN_min			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	steEN_min 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
+	ErrorEN_min			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	steEN_min 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
 	
 	step 					= 0.05;
 	for(i=0;i<L_alpha;i++) 
@@ -2253,10 +2253,10 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	double sigma2; //return value;
 
 	double *W;  //weight on diagonal?
-	W = (double* ) Calloc(MM, double);
+	W = (double* ) R_Calloc(MM, double);
 
 	double *QIBinv;
-	QIBinv = (double* ) Calloc(MM, double);
+	QIBinv = (double* ) R_Calloc(MM, double);
 	double beta = 0;
 	F77_CALL(dcopy)(&MM,&beta,&inc0,QIBinv,&incj);
 	for(i=0;i<M;i++) QIBinv[i*M+i] =1;
@@ -2312,10 +2312,10 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	
 	//call centerYX;
 	double *meanY, *meanX, *Ycopy, *Xcopy;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	Ycopy = (double* ) Calloc(MN, double);
-	Xcopy = (double* ) Calloc(MN, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
+	Ycopy = (double* ) R_Calloc(MN, double);
+	Xcopy = (double* ) R_Calloc(MN, double);
 	
 	
 	//copy Y,X
@@ -2325,7 +2325,7 @@ void mainSML_adaEN(double *Y, double *X, int *m, int *n, int *Missing,double*B, 
 	centerYX(Ycopy,Xcopy, meanY, meanX,M, N);
 	// call Q_start
 	double *Q;
-	Q = (double* ) Calloc(MM, double);
+	Q = (double* ) R_Calloc(MM, double);
 	QlambdaStart(Ycopy,Xcopy, Q, sigma2, M, N);
 	
 	//selection path
@@ -2380,24 +2380,24 @@ if(verbose>0) Rprintf("\tlambda: %f\n", lambda);
 	stat[4] = stat[0]/stat[1];
 	stat[5] = stat[2]/stat[3];
 	if(verbose==0) Rprintf("Step 5: Finish calculation; detection power in stat vector.\n");
-	Free(Strue);
-	Free(meanY);
-	Free(meanX);
-	Free(lambda_factors);
-	Free(rho_factors);
-	Free(Ycopy);
-	Free(Xcopy);
-	Free(W);
-	Free(QIBinv);
-	Free(Q);
+	R_Free(Strue);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(lambda_factors);
+	R_Free(rho_factors);
+	R_Free(Ycopy);
+	R_Free(Xcopy);
+	R_Free(W);
+	R_Free(QIBinv);
+	R_Free(Q);
 	
 	//------adaEN	
-	Free(alpha_factors);
-	Free(ErrorEN);
-	Free(lambdaEN);
+	R_Free(alpha_factors);
+	R_Free(ErrorEN);
+	R_Free(lambdaEN);
 	
-	Free(ErrorEN_min);
-	Free(steEN_min);
+	R_Free(ErrorEN_min);
+	R_Free(steEN_min);
 
 }
 
@@ -2414,14 +2414,14 @@ int cv_gene_nets_support_adaENcv(double *Y, double *X, int Kcv,double *lambda_fa
 	// to save for each lambda
 	double *Q, *BL, *fL,*mueL; 
 	int i,j,index;	
-	Q = (double* ) Calloc(MM, double); //ptr Q
-	BL = (double* ) Calloc(MM, double); //ptr BL
-	fL = (double* ) Calloc(M, double); //ptr fL
-	mueL = (double* ) Calloc(M, double);
+	Q = (double* ) R_Calloc(MM, double); //ptr Q
+	BL = (double* ) R_Calloc(MM, double); //ptr BL
+	fL = (double* ) R_Calloc(M, double); //ptr fL
+	mueL = (double* ) R_Calloc(M, double);
 	//
 	double *BC, *fC;
-	BC = (double* ) Calloc(MM, double);
-	fC = (double* ) Calloc(M, double);
+	BC = (double* ) R_Calloc(MM, double);
+	fC = (double* ) R_Calloc(M, double);
 	
 	int Ntest = N/Kcv; 		//C takes floor
 	int Nlearn = N - Ntest; 
@@ -2435,27 +2435,27 @@ int cv_gene_nets_support_adaENcv(double *Y, double *X, int Kcv,double *lambda_fa
 		i= Nlambdas*Kcv;
 	}
 	
-	Errs = (double* ) Calloc(i, double);
-	Sigmas2 = (double* ) Calloc(Nlambdas, double);
-	ErrorMean= (double* ) Calloc(Nlambdas, double);
+	Errs = (double* ) R_Calloc(i, double);
+	Sigmas2 = (double* ) R_Calloc(Nlambdas, double);
+	ErrorMean= (double* ) R_Calloc(Nlambdas, double);
 	i = Nlambdas*Kcv;
-	ErrorCV = (double* ) Calloc(i, double);
+	ErrorCV = (double* ) R_Calloc(i, double);
 	
 	//parameters inside the loop
 	double *Ylearn, *Xlearn, *Ytest,*Xtest;
 	int NlearnM = Nlearn*M;
 	int NtestM = Ntest*M;
-	Ylearn = (double* ) Calloc(NlearnM, double);
-	Xlearn = (double* ) Calloc(NlearnM, double);
-	Ytest = (double* ) Calloc(NtestM, double);
-	Xtest = (double* ) Calloc(NtestM, double);
+	Ylearn = (double* ) R_Calloc(NlearnM, double);
+	Xlearn = (double* ) R_Calloc(NlearnM, double);
+	Ytest = (double* ) R_Calloc(NtestM, double);
+	Xtest = (double* ) R_Calloc(NtestM, double);
 
 	//centerYX function
 	double *Ylearn_centered, *Xlearn_centered, *meanY, *meanX;
-	Ylearn_centered = (double* ) Calloc(NlearnM, double);
-	Xlearn_centered = (double* ) Calloc(NlearnM, double);
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
+	Ylearn_centered = (double* ) R_Calloc(NlearnM, double);
+	Xlearn_centered = (double* ) R_Calloc(NlearnM, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
 	
 
 	//main loop
@@ -2472,7 +2472,7 @@ int cv_gene_nets_support_adaENcv(double *Y, double *X, int Kcv,double *lambda_fa
 	lambda_factor_prev = 1;
 
 	double *SL;				//zero or not-zero
-	SL = (double* ) Calloc(MM, double);
+	SL = (double* ) R_Calloc(MM, double);
 
 	//------adaEN
 	if(verbose>1) Rprintf("\t\ti_alpha %d; \t Enter Function: cv_support. Nlambdas: %d; \t %d-fold cross validation.\n", i_alpha, Nlambdas,Kcv);
@@ -2496,9 +2496,9 @@ int cv_gene_nets_support_adaENcv(double *Y, double *X, int Kcv,double *lambda_fa
 	mueR= &mueL[0];//BORROWED; no return: reset in lambda CV
 
 	double *testNoise,*ImB,*NOISE;
-	NOISE =(double* ) Calloc(MN, double);
+	NOISE =(double* ) R_Calloc(MN, double);
 	testNoise = &NOISE[0];
-	ImB = (double* ) Calloc(MM, double);
+	ImB = (double* ) R_Calloc(MM, double);
 	char transa = 'N'; 
 	char transb = 'N';
 	lda = M;
@@ -2657,9 +2657,9 @@ if(i_alpha ==0)
 	double *IBinv,*IBinvZero,*lambda_Max;
 	double *IBinvPath,*IBinvPathZero;
 	irho  = MM*Kcv;
-	IBinvPath = (double* ) Calloc(irho, double);
-	IBinvPathZero = (double* ) Calloc(irho, double);
-	lambda_Max = (double* ) Calloc(Kcv, double);
+	IBinvPath = (double* ) R_Calloc(irho, double);
+	IBinvPathZero = (double* ) R_Calloc(irho, double);
+	lambda_Max = (double* ) R_Calloc(Kcv, double);
 	double lambda_max_cv;
 	beta = 0;
 	//initialized
@@ -2816,7 +2816,7 @@ if(i_alpha ==0)
 	}//while ilambda
 
 	double *errorMeanCpy;
-	errorMeanCpy = (double* ) Calloc(Nlambdas, double);
+	errorMeanCpy = (double* ) R_Calloc(Nlambdas, double);
 	//int inc0  = 0;
 	double minimumErr = -1e5 - MN;
 	F77_CALL(dcopy)(&Nlambdas,&minimumErr,&inc0,errorMeanCpy,&inci);
@@ -2866,39 +2866,39 @@ if(i_alpha ==0)
 	if(verbose>1) Rprintf("\t\tExit Function: cv_support. optimal lambda index: %d.\n\n", ilambda_ms);
 
 
-	Free(NOISE);
-	Free(ImB);
+	R_Free(NOISE);
+	R_Free(ImB);
 	
 	
-	Free(Q);
-	Free(BL);
-	Free(fL);
-	Free(mueL);
-	Free(BC);
-	Free(fC);
+	R_Free(Q);
+	R_Free(BL);
+	R_Free(fL);
+	R_Free(mueL);
+	R_Free(BC);
+	R_Free(fC);
 	
-	Free(Errs);
-	Free(Sigmas2);
-	Free(ErrorMean);
-	Free(ErrorCV);
-	Free(errorMeanCpy);
+	R_Free(Errs);
+	R_Free(Sigmas2);
+	R_Free(ErrorMean);
+	R_Free(ErrorCV);
+	R_Free(errorMeanCpy);
 	
-	Free(Ylearn);
-	Free(Xlearn);
-	Free(Ytest);
-	Free(Xtest);	
+	R_Free(Ylearn);
+	R_Free(Xlearn);
+	R_Free(Ytest);
+	R_Free(Xtest);	
 
-	Free(Ylearn_centered);
-	Free(Xlearn_centered);	
-	Free(meanY);
-	Free(meanX);
-	Free(SL);
+	R_Free(Ylearn_centered);
+	R_Free(Xlearn_centered);	
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(SL);
 
 
-	Free(IBinvPath);
-	Free(IBinvPathZero);
+	R_Free(IBinvPath);
+	R_Free(IBinvPathZero);
 	
-	Free(lambda_Max);
+	R_Free(lambda_Max);
 	
 	return ilambda_ms;
 
@@ -2927,7 +2927,7 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	int MN 					= M*N;
 	int MM 					= M*M;
 	double *Strue;
-	Strue 					= (double* ) Calloc(MM, double);
+	Strue 					= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,B,&inci,Strue,&incj);
 	stat[1] 				= 0;
 	for(i=0;i<M;i++)
@@ -2959,7 +2959,7 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	step 					= -6;
 	double * rho_factors;
 	int L 					= 31; // number of rho_factors
-	rho_factors 			= (double* ) Calloc(L, double);
+	rho_factors 			= (double* ) R_Calloc(L, double);
 	for(i=0;i<L;i++) 
 	{
 		rho_factors[i] 		= pow(10.0,step);
@@ -2968,12 +2968,12 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	//------adaEN 	
 	double  *ErrorEN,*lambdaEN, sigma2learnt;	//*alpha_factors,
 	int L_alpha  		= nAlpha[0]; 
-	ErrorEN 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	lambdaEN 			= (double* ) Calloc(L_alpha, double);
+	ErrorEN 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	lambdaEN 			= (double* ) R_Calloc(L_alpha, double);
 
 	double *ErrorEN_min, *steEN_min;
-	ErrorEN_min			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	steEN_min 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
+	ErrorEN_min			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	steEN_min 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
 	
 	step 					= 0.05;
 
@@ -2987,9 +2987,9 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	double sigma2; //return value;
 
 	double *W;  //weight on diagonal?
-	W = (double* ) Calloc(MM, double);
+	W = (double* ) R_Calloc(MM, double);
 	double *QIBinv;
-	QIBinv = (double* ) Calloc(MM, double);
+	QIBinv = (double* ) R_Calloc(MM, double);
 	double beta = 0;
 	F77_CALL(dcopy)(&MM,&beta,&inc0,QIBinv,&incj);
 	for(i=0;i<M;i++) QIBinv[i*M+i] =1;
@@ -3064,10 +3064,10 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	
 	//call centerYX;
 	double *meanY, *meanX, *Ycopy, *Xcopy;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	Ycopy = (double* ) Calloc(MN, double);
-	Xcopy = (double* ) Calloc(MN, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
+	Ycopy = (double* ) R_Calloc(MN, double);
+	Xcopy = (double* ) R_Calloc(MN, double);
 	
 	
 	//copy Y,X
@@ -3077,7 +3077,7 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 	centerYX(Ycopy,Xcopy, meanY, meanX,M, N);
 	// call Q_start
 	double *Q;
-	Q = (double* ) Calloc(MM, double);
+	Q = (double* ) R_Calloc(MM, double);
 	QlambdaStart(Ycopy,Xcopy, Q, sigma2, M, N);
 	
 	//selection path
@@ -3134,22 +3134,22 @@ void mainSML_adaENcv(double *Y, double *X, int *m, int *n, int *Missing, double*
 
 	
 	
-	Free(Strue);
-	Free(meanY);
-	Free(meanX);
-	Free(rho_factors);
-	Free(Ycopy);
-	Free(Xcopy);
-	Free(W);
-	Free(QIBinv);
-	Free(Q);
+	R_Free(Strue);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(rho_factors);
+	R_Free(Ycopy);
+	R_Free(Xcopy);
+	R_Free(W);
+	R_Free(QIBinv);
+	R_Free(Q);
 	
 	//------adaEN 		
-	Free(ErrorEN);
-	Free(lambdaEN);
+	R_Free(ErrorEN);
+	R_Free(lambdaEN);
 	
-	Free(ErrorEN_min);
-	Free(steEN_min);
+	R_Free(ErrorEN_min);
+	R_Free(steEN_min);
 
 }
 
@@ -3173,7 +3173,7 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 	int MN 					= M*N;
 	int MM 					= M*M;
 	double *Strue;
-	Strue 					= (double* ) Calloc(MM, double);
+	Strue 					= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,B,&inci,Strue,&incj);
 	stat[1] 				= 0;
 	for(i=0;i<M;i++)
@@ -3205,7 +3205,7 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 	step 					= -6;
 	double * rho_factors;
 	int L 					= 31; // number of rho_factors
-	rho_factors 			= (double* ) Calloc(L, double);
+	rho_factors 			= (double* ) R_Calloc(L, double);
 	for(i=0;i<L;i++) 
 	{
 		rho_factors[i] 		= pow(10.0,step);
@@ -3214,11 +3214,11 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 
 	double  *ErrorEN,*lambdaEN, sigma2learnt;	//*alpha_factors,
 	int L_alpha  		= 1; 
-	ErrorEN 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	lambdaEN 			= (double* ) Calloc(L_alpha, double);
+	ErrorEN 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	lambdaEN 			= (double* ) R_Calloc(L_alpha, double);
 	double *ErrorEN_min, *steEN_min;
-	ErrorEN_min			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	steEN_min 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
+	ErrorEN_min			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	steEN_min 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
 
 	step 					= 0.05;
 
@@ -3231,10 +3231,10 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 //call ridge_cvf
 	double sigma2; //return value;
 	double *W;  //weight on diagonal?
-	W = (double* ) Calloc(MM, double);
+	W = (double* ) R_Calloc(MM, double);
 
 	double *QIBinv;
-	QIBinv = (double* ) Calloc(MM, double);
+	QIBinv = (double* ) R_Calloc(MM, double);
 	double beta = 0;
 	F77_CALL(dcopy)(&MM,&beta,&inc0,QIBinv,&incj);
 	for(i=0;i<M;i++) QIBinv[i*M+i] =1;
@@ -3270,10 +3270,10 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 	
 	//call centerYX;
 	double *meanY, *meanX, *Ycopy, *Xcopy;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	Ycopy = (double* ) Calloc(MN, double);
-	Xcopy = (double* ) Calloc(MN, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
+	Ycopy = (double* ) R_Calloc(MN, double);
+	Xcopy = (double* ) R_Calloc(MN, double);
 	
 	
 	//copy Y,X
@@ -3283,7 +3283,7 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 	centerYX(Ycopy,Xcopy, meanY, meanX,M, N);
 	// call Q_start
 	double *Q;
-	Q = (double* ) Calloc(MM, double);
+	Q = (double* ) R_Calloc(MM, double);
 	QlambdaStart(Ycopy,Xcopy, Q, sigma2, M, N);
 	
 	//selection path
@@ -3336,21 +3336,21 @@ void mainSML_adaENpointLambda(double *Y, double *X, int *m, int *n, int *Missing
 	stat[4] = stat[0]/stat[1];
 	stat[5] = stat[2]/stat[3];
 	if(verbose==0) Rprintf("Step 5: Finish calculation; detection power in stat vector.\n");
-	Free(Strue);
-	Free(meanY);
-	Free(meanX);
-	Free(rho_factors);
-	Free(Ycopy);
-	Free(Xcopy);
-	Free(W);
-	Free(QIBinv);
-	Free(Q);
+	R_Free(Strue);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(rho_factors);
+	R_Free(Ycopy);
+	R_Free(Xcopy);
+	R_Free(W);
+	R_Free(QIBinv);
+	R_Free(Q);
 	
 	//------adaEN 		
-	Free(ErrorEN);
-	Free(lambdaEN);
-		Free(ErrorEN_min);
-	Free(steEN_min);
+	R_Free(ErrorEN);
+	R_Free(lambdaEN);
+		R_Free(ErrorEN_min);
+	R_Free(steEN_min);
 	
 }
 
@@ -3379,7 +3379,7 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	int MN 					= M*N;
 	int MM 					= M*M;
 	double *Strue;
-	Strue 					= (double* ) Calloc(MM, double);
+	Strue 					= (double* ) R_Calloc(MM, double);
 	F77_CALL(dcopy)(&MM,B,&inci,Strue,&incj);
 	stat[1] 				= 0;
 	for(i=0;i<M;i++)
@@ -3411,7 +3411,7 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	step 					= -6;
 	double * rho_factors;
 	int L 					= 31; // number of rho_factors
-	rho_factors 			= (double* ) Calloc(L, double);
+	rho_factors 			= (double* ) R_Calloc(L, double);
 	for(i=0;i<L;i++) 
 	{
 		rho_factors[i] 		= pow(10.0,step);
@@ -3420,12 +3420,12 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 
 	double  *ErrorEN,*lambdaEN, sigma2learnt;	//*alpha_factors,
 	int L_alpha  		= 1; 
-	ErrorEN 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	lambdaEN 			= (double* ) Calloc(L_alpha, double);
+	ErrorEN 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	lambdaEN 			= (double* ) R_Calloc(L_alpha, double);
 
 	double *ErrorEN_min, *steEN_min;
-	ErrorEN_min			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
-	steEN_min 			= (double* ) Calloc(L_alpha, double);//rank0 variable actually.
+	ErrorEN_min			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
+	steEN_min 			= (double* ) R_Calloc(L_alpha, double);//rank0 variable actually.
 	
 	
 	step 					= 0.05;
@@ -3441,10 +3441,10 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	double sigma2; //return value;
 
 	double *W;  //weight on diagonal?
-	W = (double* ) Calloc(MM, double);
+	W = (double* ) R_Calloc(MM, double);
 
 	double *QIBinv;
-	QIBinv = (double* ) Calloc(MM, double);
+	QIBinv = (double* ) R_Calloc(MM, double);
 	double beta = 0;
 	F77_CALL(dcopy)(&MM,&beta,&inc0,QIBinv,&incj);
 	for(i=0;i<M;i++) QIBinv[i*M+i] =1;
@@ -3501,10 +3501,10 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	
 	//call centerYX;
 	double *meanY, *meanX, *Ycopy, *Xcopy;
-	meanY = (double* ) Calloc(M, double);
-	meanX = (double* ) Calloc(M, double);
-	Ycopy = (double* ) Calloc(MN, double);
-	Xcopy = (double* ) Calloc(MN, double);
+	meanY = (double* ) R_Calloc(M, double);
+	meanX = (double* ) R_Calloc(M, double);
+	Ycopy = (double* ) R_Calloc(MN, double);
+	Xcopy = (double* ) R_Calloc(MN, double);
 	
 	
 	//copy Y,X
@@ -3514,7 +3514,7 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	centerYX(Ycopy,Xcopy, meanY, meanX,M, N);
 	// call Q_start
 	double *Q;
-	Q = (double* ) Calloc(MM, double);
+	Q = (double* ) R_Calloc(MM, double);
 	QlambdaStart(Ycopy,Xcopy, Q, sigma2, M, N);
 	
 	//selection path
@@ -3572,22 +3572,22 @@ void mainSML_adaENstabilitySelection(double *Y, double *X, int *m, int *n, int *
 	stat[4] = stat[0]/stat[1];
 	stat[5] = stat[2]/stat[3];
 	if(verbose==0) Rprintf("Step 5: Finish calculation; detection power in stat vector.\n");
-	Free(Strue);
-	Free(meanY);
-	Free(meanX);
-	Free(rho_factors);
-	Free(Ycopy);
-	Free(Xcopy);
-	Free(W);
-	Free(QIBinv);
-	Free(Q);
+	R_Free(Strue);
+	R_Free(meanY);
+	R_Free(meanX);
+	R_Free(rho_factors);
+	R_Free(Ycopy);
+	R_Free(Xcopy);
+	R_Free(W);
+	R_Free(QIBinv);
+	R_Free(Q);
 	
 	//------adaEN 		
-	Free(ErrorEN);
-	Free(lambdaEN);
+	R_Free(ErrorEN);
+	R_Free(lambdaEN);
 	
-		Free(ErrorEN_min);
-	Free(steEN_min);
+		R_Free(ErrorEN_min);
+	R_Free(steEN_min);
 
 }
 

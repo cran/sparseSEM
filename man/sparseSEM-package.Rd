@@ -39,8 +39,8 @@ A lasso-strong rule is developed for SEM and applied to the selection path. In e
 \tabular{ll}{
 Package: \tab sparseSEM\cr
 Type: \tab Package\cr
-Version: \tab 4.0\cr
-Date: \tab 2023-07-28\cr
+Version: \tab 4.1\cr
+Date: \tab 2024-10-25\cr
 License: \tab GPL\cr
 }
 

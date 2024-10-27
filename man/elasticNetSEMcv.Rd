@@ -66,22 +66,18 @@ elasticNetSEMcv(Y, X, Missing, B, alpha_factors,lambda_factors,kFold, verbose)
   }
 
 	\itemize{
-    \item{fit}{the model fit with optimal (alpha,lambda) from cv}
+    \item fit the model fit with optimal (alpha,lambda) from cv
     \itemize{ 
-	    \item{Bout}{
-  	      the computed weights for the network topology. B[i,j] = 0 means there is no edge between node i and j;
+	    \item Bout the computed weights for the network topology. B[i,j] = 0 means there is no edge between node i and j;
           B[i,j]!=0 denotes an (undirected) edge between note i and j with B[i,j] being the weight of the edge.
-          }
-      \item{fout}{
-      	f is 1 by M array keeping the weight for X (in SEM: Y = BY + FX + e). Theoretically, F can be M by L matrix,
+          
+      \item fout f is 1 by M array keeping the weight for X (in SEM: Y = BY + FX + e). Theoretically, F can be M by L matrix,
               with M being the number of nodes, and L being the total node attributes. However, in current implementation,
               each node only allows one and only one attribute.
               If you have more than one attributes for some nodes, please consider selecting the top one by either
               correlation or principal component methods.
       	
-      	}
-    	\item{stat}{
-    	statistics is 1x6 array keeping record of: \cr
+    	\item stat statistics is 1x6 array keeping record of: \cr
                     1. correct positive \cr
                     2. total positive   \cr
                     3. false positive   \cr
@@ -89,9 +85,8 @@ elasticNetSEMcv(Y, X, Missing, B, alpha_factors,lambda_factors,kFold, verbose)
                     5. Power of detection (PD) = correct positive/total positive  \cr
                     6. False Discovery Rate (FDR) = false positive/positive detected
     	
-    	}
-	  \item{simTime}{computational time}
-    \item{call}{the call that produced this object}	
+	  \item simTime computational time
+    \item call the call that produced this object 
     }
   }
 }

@@ -49,7 +49,7 @@ void centerYX(double *Y,double *X, double *meanY, double *meanX,int M, int N) //
   int inc0 = 0;
   int lda  = M; //leading dimension
   double *eye;
-  eye = (double* ) Calloc(N, double);
+  eye = (double* ) R_Calloc(N, double);
   double alpha = 1;
   double beta = 0;
   F77_CALL(dcopy)(&N,&alpha,&inc0,eye,&inci);
@@ -71,7 +71,7 @@ void centerYX(double *Y,double *X, double *meanY, double *meanX,int M, int N) //
     F77_CALL(daxpy)(&M,&scale,meanY,&inci,Yptr,&incj);
     F77_CALL(daxpy)(&M,&scale,meanX,&inci,Xptr,&incj);
   }
-  Free(eye);
+  R_Free(eye);
 }	
 
 
@@ -83,14 +83,14 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   int i,j,k,lda,ldb,ldc,ldk;
   // center Y, X
   double *meanY, *meanX;
-  meanY = (double* ) Calloc(M, double);
-  meanX = (double* ) Calloc(M, double);
+  meanY = (double* ) R_Calloc(M, double);
+  meanX = (double* ) R_Calloc(M, double);
   
   //copy Y, X; 
   double *Y, *X;
   int MN = M*N;
-  Y = (double* ) Calloc(MN, double);
-  X = (double* ) Calloc(MN, double);
+  Y = (double* ) R_Calloc(MN, double);
+  X = (double* ) R_Calloc(MN, double);
   
   int inci = 1;
   int incj = 1;
@@ -104,18 +104,18 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   int Mi = M -1;
   //for usage in loop
   double *YiPi; //Yi'*Pi
-  YiPi =(double* ) Calloc(Mi*N, double);
+  YiPi =(double* ) R_Calloc(Mi*N, double);
   double xixi,xixiInv; //xi'*xi;
   int jj,index; //jj = 1:(M-1) index of YiPi
   double normYiPi,rho;
   double *bi,*YiPi2Norm; 	//YiPi2Norm: first term of biInv;
   
   double *Hi,*Yi,*xi,*yi,*xii;//xii for Hi calculation Hi= xi*xi'
-  Hi = (double* ) Calloc(N*N, double);
-  Yi =(double* ) Calloc(Mi*N, double);
-  xi = (double* ) Calloc(N, double);
-  xii = (double* ) Calloc(N, double);
-  yi = (double* ) Calloc(N, double);
+  Hi = (double* ) R_Calloc(N*N, double);
+  Yi =(double* ) R_Calloc(Mi*N, double);
+  xi = (double* ) R_Calloc(N, double);
+  xii = (double* ) R_Calloc(N, double);
+  yi = (double* ) R_Calloc(N, double);
   double alpha, beta;
   char transa = 'N';
   char transb = 'N';
@@ -123,11 +123,11 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   //
   int MiMi = Mi*Mi;
   int NN = N*N;
-  YiPi2Norm 	= (double* ) Calloc(MiMi, double);	
-  bi 			= (double* ) Calloc(Mi, double);
+  YiPi2Norm 	= (double* ) R_Calloc(MiMi, double);	
+  bi 			= (double* ) R_Calloc(Mi, double);
 
   double *xiYi; //xi*Yi
-  xiYi = (double* ) Calloc(Mi, double);
+  xiYi = (double* ) R_Calloc(Mi, double);
   double xiYibi, xiyi;
 
   alpha = 1;
@@ -135,20 +135,20 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   
   //largest Eigenvalue
   double *biInv;
-  biInv 		= (double* ) Calloc(MiMi, double); //copy of YiPi2Norm
+  biInv 		= (double* ) R_Calloc(MiMi, double); //copy of YiPi2Norm
   char jobz = 'N'; // yes for eigenvectors
   char uplo = 'U'; //both ok
   double *w, *work;
-  w = (double *) Calloc(Mi,double);
+  w = (double *) R_Calloc(Mi,double);
   int lwork = 5*Mi + 10;
-  work  = (double *) Calloc(lwork,double);	
+  work  = (double *) R_Calloc(lwork,double);	
   int liwork = 10;
   int *iwork;
-  iwork = (int *) Calloc(liwork,int);
+  iwork = (int *) R_Calloc(liwork,int);
   int info = 0;
 
   int *ipiv;
-  ipiv = (int *) Calloc(Mi,int);
+  ipiv = (int *) R_Calloc(Mi,int);
   double *readPtr,*readPtr2;
   //loop starts here
   for(i=0;i<M;i++)
@@ -247,7 +247,7 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   
   double *ImB;
   k = M*M;
-  ImB = (double* ) Calloc(k, double);
+  ImB = (double* ) R_Calloc(k, double);
   F77_CALL(dcopy)(&k,B,&inci,ImB,&incj);
   xixiInv = -1;
   F77_CALL(dscal)(&k,&xixiInv,ImB,&inci);
@@ -260,7 +260,7 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
 
   //noise, sigma2learnt,mue;
   double * NOISE; 	//MxN
-  NOISE =(double* ) Calloc(MN, double);
+  NOISE =(double* ) R_Calloc(MN, double);
   transb = 'N';
   ldk = M;
   lda = M;
@@ -294,32 +294,32 @@ double constrained_ridge_cff(double *Ycopy, double *Xcopy, double rho_factor, in
   
   if(verbose>7) Rprintf("\t\t\t\t\t\t\t\tExit function: Ridge Regression. sigma^2 is: %f.\n\n",sigma2learnt);
   
-  Free(meanY);
-  Free(meanX);
-  Free(Y);
-  Free(X);
-  Free(YiPi);
-  Free(YiPi2Norm);
-  Free(bi);	
-  Free(xiYi);
-  Free(NOISE);
+  R_Free(meanY);
+  R_Free(meanX);
+  R_Free(Y);
+  R_Free(X);
+  R_Free(YiPi);
+  R_Free(YiPi2Norm);
+  R_Free(bi);	
+  R_Free(xiYi);
+  R_Free(NOISE);
   //
-  Free(Hi);
-  Free(Yi);
-  Free(xi);
-  Free(yi);
-  Free(xii);
+  R_Free(Hi);
+  R_Free(Yi);
+  R_Free(xi);
+  R_Free(yi);
+  R_Free(xii);
   //
-  Free(ImB);
+  R_Free(ImB);
   
   //
-  Free(biInv);
+  R_Free(biInv);
   
-  Free(w);
-  Free(iwork);
-  Free(work);
+  R_Free(w);
+  R_Free(iwork);
+  R_Free(work);
   
-  Free(ipiv);
+  R_Free(ipiv);
   return sigma2learnt;
   
 }
@@ -329,9 +329,9 @@ double lambdaMax(double *Y,double *X,double * W,int M, int N)
 {	
   double *dxx, *rxy, *DxxRxy,*readPtr1,*readPtr2;
   double lambda_max = 0;		
-  dxx				= (double* ) Calloc(M, double);
-  rxy				= (double* ) Calloc(M, double);
-  DxxRxy			= (double* ) Calloc(M, double);
+  dxx				= (double* ) R_Calloc(M, double);
+  rxy				= (double* ) R_Calloc(M, double);
+  DxxRxy			= (double* ) R_Calloc(M, double);
   int i,k,index,lda;
   int inci = 1;
   int incj = 1; 
@@ -348,7 +348,7 @@ double lambdaMax(double *Y,double *X,double * W,int M, int N)
   
   double * XDxxRxy;
   int MN = M*N;
-  XDxxRxy = (double* ) Calloc(MN, double);
+  XDxxRxy = (double* ) R_Calloc(MN, double);
 
   F77_CALL(dcopy)(&MN,X,&inci,XDxxRxy,&incj);
   double alpha;	
@@ -363,7 +363,7 @@ double lambdaMax(double *Y,double *X,double * W,int M, int N)
   F77_CALL(daxpy)(&MN,&alpha,Y,&inci,XDxxRxy,&inci);
   double *YYXDR; //= Y*XDxxRxy'
   int MM = M*M;
-  YYXDR = (double* ) Calloc(MM, double);	
+  YYXDR = (double* ) R_Calloc(MM, double);	
 
   double beta;
   char transa = 'N';
@@ -390,12 +390,12 @@ double lambdaMax(double *Y,double *X,double * W,int M, int N)
   index = F77_CALL(idamax)(&MM,YYXDR,&inci);
   lambda_max = fabs(YYXDR[index-1]);
   
-  Free(dxx);
-  Free(rxy);
-  Free(DxxRxy);
-  //Free(XX);
-  Free(XDxxRxy);
-  Free(YYXDR);
+  R_Free(dxx);
+  R_Free(rxy);
+  R_Free(DxxRxy);
+  //R_Free(XX);
+  R_Free(XDxxRxy);
+  R_Free(YYXDR);
   
   return lambda_max;	
 }
@@ -404,9 +404,9 @@ void QlambdaStart(double *Y,double *X, double *Q, double sigma2,int M, int N)
 {	
   double *dxx, *rxy, *DxxRxy,*readPtr1,*readPtr2;
   
-  dxx				= (double* ) Calloc(M, double);
-  rxy				= (double* ) Calloc(M, double);
-  DxxRxy			= (double* ) Calloc(M, double);
+  dxx				= (double* ) R_Calloc(M, double);
+  rxy				= (double* ) R_Calloc(M, double);
+  DxxRxy			= (double* ) R_Calloc(M, double);
   int i,index,ldk,lda,ldb,ldc;
   int inci = 1;
   int incj = 1; 
@@ -425,7 +425,7 @@ void QlambdaStart(double *Y,double *X, double *Q, double sigma2,int M, int N)
 
   double * XDxxRxy;
   int MN = M*N;
-  XDxxRxy = (double* ) Calloc(MN, double);
+  XDxxRxy = (double* ) R_Calloc(MN, double);
   F77_CALL(dcopy)(&MN,X,&inci,XDxxRxy,&incj);
   double alpha;	
   for(i=0;i<M;i++)
@@ -455,10 +455,10 @@ void QlambdaStart(double *Y,double *X, double *Q, double sigma2,int M, int N)
     Q[index]= Q[index] + Nsigma2;
   }	
   
-  Free(dxx);
-  Free(rxy);
-  Free(DxxRxy);
-  Free(XDxxRxy);
+  R_Free(dxx);
+  R_Free(rxy);
+  R_Free(DxxRxy);
+  R_Free(XDxxRxy);
   
   
 }
@@ -470,9 +470,9 @@ void QlambdaMiddle(double *Y,double *X, double *Q,double *B,double *f, double *m
   double *IB, *IBinv,*IBcopy;
   int MM = M*M;
   int MN = M*N;
-  IB = (double* ) Calloc(MM, double);
-  IBinv = (double* ) Calloc(MM, double);
-  IBcopy = (double* ) Calloc(MM, double);
+  IB = (double* ) R_Calloc(MM, double);
+  IBinv = (double* ) R_Calloc(MM, double);
+  IBcopy = (double* ) R_Calloc(MM, double);
   int inci = 1;
   int incj = 1;
   F77_CALL(dcopy)(&MM,B,&inci,IB,&incj);	
@@ -495,7 +495,7 @@ void QlambdaMiddle(double *Y,double *X, double *Q,double *B,double *f, double *m
   
   int info = 0;
   int *ipiv;
-  ipiv = (int *) Calloc(M,int);
+  ipiv = (int *) R_Calloc(M,int);
   int lda = M;
   int ldb = M;
   int ldc = M;
@@ -504,7 +504,7 @@ void QlambdaMiddle(double *Y,double *X, double *Q,double *B,double *f, double *m
   
   double Nsigma2  = N*sigma2; 			// int * double --> double
   double *Noise;
-  Noise = (double* ) Calloc(MN, double);	
+  Noise = (double* ) R_Calloc(MN, double);	
 
   char transa = 'N';
   char transb = 'N';
@@ -532,11 +532,11 @@ void QlambdaMiddle(double *Y,double *X, double *Q,double *B,double *f, double *m
   alpha = Nsigma2;
   F77_CALL(daxpy)(&MM, &alpha,IBinv, &inci,Q, &incj);
   
-  Free(IB);
-  Free(IBinv);
-  Free(IBcopy);
-  Free(Noise);
-  Free(ipiv);
+  R_Free(IB);
+  R_Free(IBinv);
+  R_Free(IBcopy);
+  R_Free(Noise);
+  R_Free(ipiv);
   
 }
 
@@ -548,7 +548,7 @@ void QlambdaMiddleCenter(double *Y,double *X, double *Q,double *B,double *f, dou
   double *IB; 	//, *IBinv,*IBcopy
   int MM = M*M;
   int MN = M*N;
-  IB = (double* ) Calloc(MM, double);
+  IB = (double* ) R_Calloc(MM, double);
 
   int inci = 1;
   int incj = 1;
@@ -574,7 +574,7 @@ void QlambdaMiddleCenter(double *Y,double *X, double *Q,double *B,double *f, dou
 
   double Nsigma2  = N*sigma2; 			// int * double --> double
   double *Noise;
-  Noise = (double* ) Calloc(MN, double);	
+  Noise = (double* ) R_Calloc(MN, double);	
 
   char transa = 'N';
   char transb = 'N';
@@ -596,9 +596,9 @@ void QlambdaMiddleCenter(double *Y,double *X, double *Q,double *B,double *f, dou
   alpha = Nsigma2;
   F77_CALL(daxpy)(&MM, &alpha,IBinv, &inci,Q, &incj);
   
-  Free(IB);
+  R_Free(IB);
 
-  Free(Noise);
+  R_Free(Noise);
   
 }
 
@@ -609,8 +609,8 @@ void UpdateIBinvPermute(double *QIBinv, double *B, int M)
   int lda = M;
   int ldb = M;
   int ldk = M;
-  IB = (double* ) Calloc(MM, double);
-  IBinv = (double* ) Calloc(MM, double);
+  IB = (double* ) R_Calloc(MM, double);
+  IBinv = (double* ) R_Calloc(MM, double);
   int inci = 1;
   int incj = 1;
   int inc0 = 0;
@@ -631,7 +631,7 @@ void UpdateIBinvPermute(double *QIBinv, double *B, int M)
   
   int info = 0;
   int *ipiv;
-  ipiv = (int *) Calloc(M,int);
+  ipiv = (int *) R_Calloc(M,int);
   F77_CALL(dgesv)(&M, &ldk, IB, &lda, ipiv, IBinv, &ldb, &info);
   double *ptr1,*ptr2;
   
@@ -644,9 +644,9 @@ void UpdateIBinvPermute(double *QIBinv, double *B, int M)
     
   }
   
-  Free(IB);
-  Free(ipiv);
-  Free(IBinv);
+  R_Free(IB);
+  R_Free(ipiv);
+  R_Free(IBinv);
 }
 
 void UpdateIBinv(double *QIBinv, double *B, int M)
@@ -656,7 +656,7 @@ void UpdateIBinv(double *QIBinv, double *B, int M)
   int lda = M;
   int ldb = M;
   int ldk = M;
-  IB = (double* ) Calloc(MM, double);
+  IB = (double* ) R_Calloc(MM, double);
   
   int inci = 1;
   int incj = 1;
@@ -678,11 +678,11 @@ void UpdateIBinv(double *QIBinv, double *B, int M)
 
   int info = 0;
   int *ipiv;
-  ipiv = (int *) Calloc(M,int);
+  ipiv = (int *) R_Calloc(M,int);
   F77_CALL(dgesv)(&M, &ldk, IB, &lda, ipiv, QIBinv, &ldb, &info);
   
-  Free(IB);
-  Free(ipiv);
+  R_Free(IB);
+  R_Free(ipiv);
 }
 
 
@@ -693,15 +693,15 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   int i,j,index,ldM;
   ldM = M;//fixed
   double *meanY, *meanX;
-  meanY = (double* ) Calloc(M, double);
-  meanX = (double* ) Calloc(M, double);
+  meanY = (double* ) R_Calloc(M, double);
+  meanX = (double* ) R_Calloc(M, double);
   
   //copy Y, X; 
   double *Y, *X;
   int MN = M*N;
   int MM = M*M;
-  Y = (double* ) Calloc(MN, double);
-  X = (double* ) Calloc(MN, double);
+  Y = (double* ) R_Calloc(MN, double);
+  X = (double* ) R_Calloc(MN, double);
 
   int inci,incj, inc0;
   inci	= 1;
@@ -721,9 +721,9 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   beta = 0;
   double deltaLambda;
   double *s, *S,*Wcopy;
-  S = (double* ) Calloc(MM, double);
-  s = (double* ) Calloc(M, double);
-  Wcopy = (double* ) Calloc(MM, double);
+  S = (double* ) R_Calloc(MM, double);
+  s = (double* ) R_Calloc(M, double);
+  Wcopy = (double* ) R_Calloc(MM, double);
   F77_CALL(dcopy)(&MM,W,&inci,Wcopy,&incj);
   
   deltaLambda 			= (2*lambda_factor - lambda_factor_prev)*lambda_max;	
@@ -731,7 +731,7 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   
   double *ei,toyZero;
   toyZero= 0;
-  ei = (double* ) Calloc(M, double);
+  ei = (double* ) R_Calloc(M, double);
   F77_CALL(dcopy)(&M,&toyZero,&inc0,ei,&inci);
 
   double *readPtr,*readPtr2;
@@ -756,11 +756,11 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   char transa = 'N'; 
 
   double *f0,*F1;
-  f0 	= (double* ) Calloc(M, double);
-  F1 	= (double* ) Calloc(MM, double);
+  f0 	= (double* ) R_Calloc(M, double);
+  F1 	= (double* ) R_Calloc(MM, double);
   
   double *y_j;
-  y_j 	= (double* ) Calloc(N, double);
+  y_j 	= (double* ) R_Calloc(N, double);
   double *F1ptr;
   
   
@@ -780,17 +780,17 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   }
 	
   double *IBinv,*zi,*a_iT;		// y_j: one row of Y: Nx1
-  IBinv 	= (double* ) Calloc(MM, double);
-  a_iT 	= (double* ) Calloc(N, double);
+  IBinv 	= (double* ) R_Calloc(MM, double);
+  a_iT 	= (double* ) R_Calloc(N, double);
   
   
   //loop starts here
   int iter = 0;
   double js_i, m_ij,B_old, lambdaW,beta_ij,r_ij, Bij;
   double *eiB;
-  eiB = (double* ) Calloc(M, double);
+  eiB = (double* ) R_Calloc(M, double);
   double *BiT;
-  BiT = (double* ) Calloc(M, double);
+  BiT = (double* ) R_Calloc(M, double);
 
   double d_ij, theta_ijp,k_ijp,q_ijp,Bijpp, Bijpm; //case (14)
   double q_ijm, theta_ijm, Bijmm, Bijmp,Lss,candsBij,LssCands;
@@ -800,9 +800,9 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   double delta_BF,FnormOld, FnormChange;
   double *BfOld,*BfNew,*BfChange;
   index = M*(M  +1);
-  BfOld = (double* ) Calloc(index, double);
-  BfNew = (double* ) Calloc(index, double);
-  BfChange = (double* ) Calloc(index, double);
+  BfOld = (double* ) R_Calloc(index, double);
+  BfNew = (double* ) R_Calloc(index, double);
+  BfChange = (double* ) R_Calloc(index, double);
   
   while(iter < max_iter)
   {
@@ -991,30 +991,30 @@ double Weighted_LassoSf(double * W, double *B, double *f, double *Ycopy,double *
   
   if(verbose>4) Rprintf("\t\t\t\tCurrent lambda: %f;\t number of iteration is: %d.\tExiting Weighted_LassoSf\n\n",lambda, iter);
   
-  Free(meanY);
-  Free(meanX);
-  Free(Y);
-  Free(X);
+  R_Free(meanY);
+  R_Free(meanX);
+  R_Free(Y);
+  R_Free(X);
   
-  Free(S);
-  Free(s);
-  Free(f0);
-  Free(F1);
-  Free(Wcopy);
+  R_Free(S);
+  R_Free(s);
+  R_Free(f0);
+  R_Free(F1);
+  R_Free(Wcopy);
   
-  //Free(xi);
-  Free(y_j);
+  //R_Free(xi);
+  R_Free(y_j);
   
-  Free(ei);
-  Free(IBinv);
-  //Free(zi);
-  Free(a_iT);
+  R_Free(ei);
+  R_Free(IBinv);
+  //R_Free(zi);
+  R_Free(a_iT);
   
-  Free(eiB);
-  Free(BiT);
-  Free(BfOld);
-  Free(BfNew);
-  Free(BfChange);
+  R_Free(eiB);
+  R_Free(BiT);
+  R_Free(BfOld);
+  R_Free(BfNew);
+  R_Free(BfChange);
   
   return lambda;
 }//weighted_LassoSf
@@ -1032,15 +1032,15 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   int i,j,index,ldk,ldM;
   ldM = M;//fixed
   double *meanY, *meanX;
-  meanY = (double* ) Calloc(M, double);
-  meanX = (double* ) Calloc(M, double);
+  meanY = (double* ) R_Calloc(M, double);
+  meanX = (double* ) R_Calloc(M, double);
   
   //copy Y, X; 
   double *Y, *X;
   int MN = M*N;
   int MM = M*M;
-  Y = (double* ) Calloc(MN, double);
-  X = (double* ) Calloc(MN, double);
+  Y = (double* ) R_Calloc(MN, double);
+  X = (double* ) R_Calloc(MN, double);
 
   int inci,incj,inc0;
   inci	= 1;
@@ -1060,9 +1060,9 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   beta = 0;
   double deltaLambda;
   double *s, *S,*Wcopy;
-  S = (double* ) Calloc(MM, double);
-  s = (double* ) Calloc(M, double);
-  Wcopy = (double* ) Calloc(MM, double);
+  S = (double* ) R_Calloc(MM, double);
+  s = (double* ) R_Calloc(M, double);
+  Wcopy = (double* ) R_Calloc(MM, double);
   F77_CALL(dcopy)(&MM,W,&inci,Wcopy,&incj);
   
   deltaLambda 			= (2*lambda_factor - lambda_factor_prev)*lambda_max;	
@@ -1071,7 +1071,7 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   //ei = 0
   double *ei,toyZero;
   toyZero= 0;
-  ei = (double* ) Calloc(M, double);
+  ei = (double* ) R_Calloc(M, double);
   F77_CALL(dcopy)(&M,&toyZero,&inc0,ei,&inci);
 
   double *readPtr,*readPtr2;
@@ -1097,13 +1097,13 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
 
   double *f0,*F1;
 
-  f0 	= (double* ) Calloc(M, double);
-  F1 	= (double* ) Calloc(MM, double);
+  f0 	= (double* ) R_Calloc(M, double);
+  F1 	= (double* ) R_Calloc(MM, double);
   
   //double *xi, *y_j;
   double *y_j;
 
-  y_j 	= (double* ) Calloc(N, double);
+  y_j 	= (double* ) R_Calloc(N, double);
   double *F1ptr;
   
   
@@ -1122,17 +1122,17 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   }
 
   double *IBinv,*zi,*a_iT;// y_j: one row of Y: Nx1
-  IBinv 	= (double* ) Calloc(MM, double);
-  a_iT 	= (double* ) Calloc(N, double);
+  IBinv 	= (double* ) R_Calloc(MM, double);
+  a_iT 	= (double* ) R_Calloc(N, double);
 
   //loop starts here
   int iter = 0;
   double js_i, m_ij,B_old, lambdaW,beta_ij,r_ij, Bij;
   //dynamic variable keep intermidiate values 
   double *eiB;
-  eiB = (double* ) Calloc(M, double);
+  eiB = (double* ) R_Calloc(M, double);
   double *BiT;
-  BiT = (double* ) Calloc(M, double);
+  BiT = (double* ) R_Calloc(M, double);
   //quadratic function
   double d_ij, theta_ijp,k_ijp,q_ijp,Bijpp, Bijpm; //case (14)
   double q_ijm, theta_ijm, Bijmm, Bijmp,Lss,candsBij,LssCands;
@@ -1144,9 +1144,9 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   double delta_BF,FnormOld, FnormChange;
   double *BfOld,*BfNew,*BfChange;
   index = M*(M  +1);
-  BfOld = (double* ) Calloc(index, double);
-  BfNew = (double* ) Calloc(index, double);
-  BfChange = (double* ) Calloc(index, double);
+  BfOld = (double* ) R_Calloc(index, double);
+  BfNew = (double* ) R_Calloc(index, double);
+  BfChange = (double* ) R_Calloc(index, double);
   
   while(iter < max_iter)
   {
@@ -1520,28 +1520,28 @@ double Weighted_LassoSf_MLf(double * W, double *BL, double *fL, double *Ycopy,do
   F77_CALL(dgemv)(&transa, &M, &ldk,&alpha, IBinv, &ldM, meanY, &inci, &beta,mue, &incj FCONE);
 
   
-  Free(meanY);
-  Free(meanX);
-  Free(Y);
-  Free(X);
+  R_Free(meanY);
+  R_Free(meanX);
+  R_Free(Y);
+  R_Free(X);
   
-  Free(S);
-  Free(s);
-  Free(f0);
-  Free(F1);
-  Free(Wcopy);
+  R_Free(S);
+  R_Free(s);
+  R_Free(f0);
+  R_Free(F1);
+  R_Free(Wcopy);
 
-  Free(y_j);
+  R_Free(y_j);
   
-  Free(ei);
-  Free(IBinv);
-  Free(a_iT);
+  R_Free(ei);
+  R_Free(IBinv);
+  R_Free(a_iT);
   
-  Free(eiB);
-  Free(BiT);
-  Free(BfOld);
-  Free(BfNew);
-  Free(BfChange);
+  R_Free(eiB);
+  R_Free(BiT);
+  R_Free(BfOld);
+  R_Free(BfNew);
+  R_Free(BfChange);
   
 
   return lambda;
